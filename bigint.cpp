@@ -1,6 +1,6 @@
 #include "bigint.hpp"
 
-const BigInt::double_limb_t BigInt::LIMB_WIDTH = 4;
+const BigInt::double_limb_t BigInt::LIMB_WIDTH = 1;
 const BigInt::double_limb_t BigInt::LIMB_MASK = (1 << BigInt::LIMB_WIDTH) - 1;
 
 void BigInt::maybe_add_leading_zero(limbs_t &limbs, limbs_iter_t &iter) {
@@ -36,8 +36,6 @@ void BigInt::add_big_int(limbs_t &lhs_limbs, limbs_iter_t lhs_iter,
                          const limbs_t &rhs_limbs,
                          limbs_const_iter_t rhs_iter) {
   while (rhs_iter != rhs_limbs.cend()) {
-    maybe_add_leading_zero(lhs_limbs, lhs_iter);
-
     add_limb(lhs_limbs, lhs_iter, *rhs_iter);
 
     ++lhs_iter;
@@ -74,8 +72,6 @@ void BigInt::multiply_by_big_int(limbs_t &acc_limbs, limbs_iter_t acc_iter,
                                  const limbs_t &rhs_limbs,
                                  limbs_const_iter_t rhs_iter) {
   while (rhs_iter != rhs_limbs.cend()) {
-    maybe_add_leading_zero(acc_limbs, acc_iter);
-
     multiply_by_limb(acc_limbs, acc_iter, lhs_limbs, lhs_iter, *rhs_iter);
 
     ++acc_iter;

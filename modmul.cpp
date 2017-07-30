@@ -10,11 +10,11 @@ using std::endl;
 int main() {
   BigInt a, b;
 
-  for (int n = 0; n < 18; ++n) {
+  for (int n = 0; n < 3; ++n) {
     a += 1;
   }
 
-  for (int n = 0; n < 52; ++n) {
+  for (int n = 0; n < 5; ++n) {
     b += 1;
   }
 
