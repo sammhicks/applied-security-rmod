@@ -1,7 +1,8 @@
 #include "bigint.hpp"
 
-const BigInt::double_limb_t BigInt::LIMB_WIDTH = 1;
-const BigInt::double_limb_t BigInt::LIMB_MASK = (1 << BigInt::LIMB_WIDTH) - 1;
+const BigInt::double_limb_t BigInt::LIMB_WIDTH = 4;
+const BigInt::double_limb_t BigInt::LIMB_MODULUS = 1 << BigInt::LIMB_WIDTH;
+const BigInt::double_limb_t BigInt::LIMB_MASK = BigInt::LIMB_MODULUS - 1;
 
 void BigInt::maybe_add_leading_zero(limbs_t &limbs, limbs_iter_t &iter) {
   if (iter == limbs.end()) {
@@ -51,6 +52,44 @@ BigInt &BigInt::operator+=(limb_t rhs) {
 
 BigInt &BigInt::operator+=(const BigInt &rhs) {
   add_big_int(limbs, limbs.begin(), rhs.limbs, rhs.limbs.cbegin());
+
+  return *this;
+}
+
+void BigInt::subtract_limb(limbs_t &lhs_limbs, limbs_iter_t lhs_iter,
+                           limb_t rhs) {
+  if (lhs_iter == lhs_limbs.end()) {
+    throw underflow_error("Negative number occurred when subtracting");
+  } else if (rhs <= *lhs_iter) {
+    *lhs_iter -= rhs;
+  } else {
+    *lhs_iter += LIMB_MODULUS - rhs;
+
+    ++lhs_iter;
+
+    subtract_limb(lhs_limbs, lhs_iter, 1);
+  }
+}
+
+void BigInt::subtract_big_int(limbs_t &lhs_limbs, limbs_iter_t lhs_iter,
+                              const limbs_t &rhs_limbs,
+                              limbs_const_iter_t rhs_iter) {
+  while (rhs_iter != rhs_limbs.cend()) {
+    subtract_limb(lhs_limbs, lhs_iter, *rhs_iter);
+
+    ++lhs_iter;
+    ++rhs_iter;
+  }
+}
+
+BigInt &BigInt::operator-=(limb_t rhs) {
+  subtract_limb(limbs, limbs.begin(), rhs);
+
+  return *this;
+}
+
+BigInt &BigInt::operator-=(const BigInt &rhs) {
+  subtract_big_int(limbs, limbs.begin(), rhs.limbs, rhs.limbs.cbegin());
 
   return *this;
 }

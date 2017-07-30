@@ -3,10 +3,12 @@
 #include <cstdint>
 #include <deque>
 #include <iostream>
+#include <stdexcept>
 
 using std::ios;
 using std::deque;
 using std::ostream;
+using std::underflow_error;
 
 class BigInt {
 public:
@@ -22,6 +24,9 @@ private:
   // Add a leading zero if the iterator is off the end
   static void maybe_add_leading_zero(limbs_t &limbs, limbs_iter_t &iter);
 
+  // Remove leading zeros
+  static void remove_leading_zero(limbs_t &limbs);
+
   // Split a double limb into two limbs
   static void split_double_limb(double_limb_t d, double_limb_t &large,
                                 limb_t &small);
@@ -32,6 +37,13 @@ private:
   static void add_big_int(limbs_t &lhs_limbs, limbs_iter_t lhs_iter,
                           const limbs_t &rhs_limbs,
                           limbs_const_iter_t rhs_iter);
+
+  // lhs -= rhs
+  static void subtract_limb(limbs_t &lhs_limbs, limbs_iter_t lhs_iter,
+                            limb_t rhs);
+  static void subtract_big_int(limbs_t &lhs_limbs, limbs_iter_t lhs_iter,
+                               const limbs_t &rhs_limbs,
+                               limbs_const_iter_t rhs_iter);
 
   // acc += lhs * rhs
   static void multiply_by_limb(limbs_t &acc_limbs, limbs_iter_t acc_iter,
@@ -45,10 +57,14 @@ private:
 
 public:
   static const double_limb_t LIMB_WIDTH;
+  static const double_limb_t LIMB_MODULUS;
   static const double_limb_t LIMB_MASK;
 
   BigInt &operator+=(limb_t rhs);
   BigInt &operator+=(const BigInt &rhs);
+
+  BigInt &operator-=(limb_t rhs);
+  BigInt &operator-=(const BigInt &rhs);
 
   BigInt operator*(limb_t rhs);
   BigInt operator*(const BigInt &rhs);
