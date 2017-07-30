@@ -1,0 +1,9 @@
+---
+BasedOnStyle: LLVM
+Language: Cpp
+NamespaceIndentation: All
+ReflowComments: 'true'
+SortIncludes: 'true'
+UseTab: Never
+
+...
