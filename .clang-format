@@ -1,5 +1,6 @@
 ---
 BasedOnStyle: LLVM
+IndentCaseLabels: 'true'
 Language: Cpp
 NamespaceIndentation: All
 ReflowComments: 'true'

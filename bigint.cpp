@@ -1,5 +1,7 @@
 #include "bigint.hpp"
 
+BigInt::Limbs::Limbs(const unsigned int quantity) : quantity(quantity) {}
+
 BigInt::BigInt(uint64_t n) {
   while (n > 0) {
     limbs.push_back(n & LIMB_MASK);
@@ -81,6 +83,20 @@ BigInt::limbs_const_iter_t BigInt::first_non_zero(limbs_const_iter_t start,
 }
 
 BigInt::Comparison BigInt::compare(limbs_const_iter_t lhs_start,
+                                   limbs_const_iter_t lhs_end, limb_t rhs) {
+  limbs_const_iter_t lhs_iter = first_non_zero(lhs_start, lhs_end);
+
+  switch (compare<limbs_const_iter_t>(lhs_iter, lhs_start)) {
+    case Comparison::LESS_THAN:
+      return compare<limb_t>(0, rhs);
+    case Comparison::EQUALS:
+      return compare<limb_t>(*lhs_iter, rhs);
+    default:
+      return Comparison::GREATER_THAN;
+  }
+}
+
+BigInt::Comparison BigInt::compare(limbs_const_iter_t lhs_start,
                                    limbs_const_iter_t lhs_end,
                                    limbs_const_iter_t rhs_start,
                                    limbs_const_iter_t rhs_end) {
@@ -97,7 +113,7 @@ BigInt::Comparison BigInt::compare(limbs_const_iter_t lhs_start,
     return length_comparison;
   } else {
     while (lhs_iter >= lhs_start && rhs_iter >= rhs_start) {
-      Comparison value_comparison = compare(*lhs_iter, *rhs_iter);
+      Comparison value_comparison = compare<limb_t>(*lhs_iter, *rhs_iter);
 
       if (value_comparison != Comparison::EQUALS) {
         return value_comparison;
@@ -111,18 +127,37 @@ BigInt::Comparison BigInt::compare(limbs_const_iter_t lhs_start,
   }
 }
 
+bool operator==(const BigInt &lhs, BigInt::limb_t rhs) {
+  return BigInt::compare(lhs.limbs.cbegin(), lhs.limbs.cend(), rhs) ==
+         BigInt::Comparison::EQUALS;
+}
+
+bool operator<(const BigInt &lhs, const BigInt &rhs) {
+  return BigInt::compare(lhs.limbs.cbegin(), lhs.limbs.cend(),
+                         rhs.limbs.cbegin(),
+                         rhs.limbs.cend()) == BigInt::Comparison::LESS_THAN;
+}
+
+bool operator>(const BigInt &lhs, const BigInt &rhs) {
+  return BigInt::compare(lhs.limbs.cbegin(), lhs.limbs.cend(),
+                         rhs.limbs.cbegin(),
+                         rhs.limbs.cend()) == BigInt::Comparison::GREATER_THAN;
+}
+
 void BigInt::add_limb(limbs_t &lhs_limbs, limbs_iter_t lhs_iter,
                       double_limb_t rhs) {
-  maybe_add_leading_zero(lhs_limbs, lhs_iter);
+  if (rhs > 0) {
+    maybe_add_leading_zero(lhs_limbs, lhs_iter);
 
-  double_limb_t carry = 0;
+    double_limb_t carry = 0;
 
-  split_double_limb(rhs + *lhs_iter, carry, *lhs_iter);
+    split_double_limb(rhs + *lhs_iter, carry, *lhs_iter);
 
-  ++lhs_iter;
+    ++lhs_iter;
 
-  if (carry > 0) {
-    add_limb(lhs_limbs, lhs_iter, carry);
+    if (carry > 0) {
+      add_limb(lhs_limbs, lhs_iter, carry);
+    }
   }
 }
 
@@ -149,18 +184,32 @@ BigInt &BigInt::operator+=(const BigInt &rhs) {
   return *this;
 }
 
+BigInt operator+(const BigInt &lhs, BigInt::limb_t rhs) {
+  BigInt result = lhs;
+  result += rhs;
+  return result;
+}
+
+BigInt operator+(const BigInt &lhs, const BigInt &rhs) {
+  BigInt result = lhs;
+  result += rhs;
+  return result;
+}
+
 void BigInt::subtract_limb(limbs_iter_t lhs_iter, limbs_iter_t lhs_end,
                            limb_t rhs) {
-  if (lhs_iter == lhs_end) {
-    throw underflow_error("Negative number occurred when subtracting");
-  } else if (rhs <= *lhs_iter) {
-    *lhs_iter -= rhs;
-  } else {
-    *lhs_iter += LIMB_MODULUS - rhs;
+  if (rhs > 0) {
+    if (lhs_iter == lhs_end) {
+      throw underflow_error("Negative number occurred when subtracting");
+    } else if (rhs <= *lhs_iter) {
+      *lhs_iter -= rhs;
+    } else {
+      *lhs_iter += LIMB_MODULUS - rhs;
 
-    ++lhs_iter;
+      ++lhs_iter;
 
-    subtract_limb(lhs_iter, lhs_end, 1);
+      subtract_limb(lhs_iter, lhs_end, 1);
+    }
   }
 }
 
@@ -186,6 +235,18 @@ BigInt &BigInt::operator-=(const BigInt &rhs) {
                    rhs.limbs.cend());
 
   return *this;
+}
+
+BigInt operator-(const BigInt &lhs, BigInt::limb_t rhs) {
+  BigInt result = lhs;
+  result -= rhs;
+  return result;
+}
+
+BigInt operator-(const BigInt &lhs, const BigInt &rhs) {
+  BigInt result = lhs;
+  result -= rhs;
+  return result;
 }
 
 void BigInt::multiply_by_limb(limbs_t &acc_limbs, limbs_iter_t acc_iter,
@@ -269,6 +330,56 @@ void BigInt::div_mod(const BigInt &lhs, const BigInt &rhs, BigInt &div,
   div_mod(mod, rhs, div);
 }
 
+void BigInt::egcd(const BigInt &a, const BigInt &b, const BigInt &b_orig,
+                  BigInt &g, BigInt &x, BigInt &y) {
+  if (a == 0) {
+    g = b;
+    x = BigInt(0);
+    y = BigInt(1);
+  } else {
+    BigInt b_div_a, b_mod_a;
+    div_mod(b, a, b_div_a, b_mod_a);
+
+    BigInt x_prime, y_prime;
+    egcd(b_mod_a, a, b_orig, g, x_prime, y_prime);
+
+    BigInt y_sub = b_div_a * x_prime;
+
+    while (y_prime < y_sub) {
+      y_prime += b_orig;
+    }
+
+    x = y_prime - y_sub;
+    y = x_prime;
+  }
+}
+
+BigInt BigInt::mod_inv(const BigInt &b, const BigInt &n) {
+  BigInt g, x, y;
+  egcd(b, n, n, g, x, y);
+  if (g == 1) {
+    return x;
+  } else {
+    throw invalid_argument("cannot calculate mod inv!");
+  }
+}
+
+BigInt &operator<<=(BigInt &lhs, const BigInt::Limbs &rhs) {
+  for (unsigned int n = 0; n < rhs.quantity; ++n) {
+    lhs.limbs.push_front(0);
+  }
+
+  return lhs;
+}
+
+BigInt &operator>>=(BigInt &lhs, const BigInt::Limbs &rhs) {
+  for (unsigned int n = 0; n < rhs.quantity; ++n) {
+    lhs.limbs.pop_front();
+  }
+
+  return lhs;
+}
+
 istream &operator>>(istream &is, BigInt &value) {
   string value_str;
 
@@ -293,5 +404,7 @@ ostream &operator<<(ostream &os, const BigInt &value) {
 
   return os;
 }
+
+size_t BigInt::size() { return limbs.size(); }
 
 void BigInt::trim() { remove_leading_zeros(limbs); }

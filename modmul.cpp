@@ -9,20 +9,14 @@ using std::cout;
 using std::endl;
 
 int main() {
-  BigInt a;
-  BigInt b;
+  BigInt b, n;
 
-  cin >> a >> b;
+  cin >> b >> n;
 
-  cout << "A:" << a << endl;
   cout << "B:" << b << endl;
+  cout << "N:" << n << endl;
 
-  BigInt a_div_b, a_mod_b;
-
-  BigInt::div_mod(a, b, a_div_b, a_mod_b);
-
-  cout << "A / B:" << a_div_b << endl;
-  cout << "A % B:" << a_mod_b << endl;
+  cout << "Inverse of B mod N: " << BigInt::mod_inv(b, n) << endl;
 
   return EXIT_SUCCESS;
 }

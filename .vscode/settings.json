@@ -16,6 +16,9 @@
         "xutility": "cpp",
         "xiosbase": "cpp",
         "exception": "cpp",
-        "initializer_list": "cpp"
+        "initializer_list": "cpp",
+        "xlocale": "cpp",
+        "type_traits": "cpp",
+        "stdexcept": "cpp"
     }
 }

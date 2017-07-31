@@ -18,6 +18,13 @@ using std::underflow_error;
 
 class BigInt {
 public:
+  class Limbs {
+  public:
+    const unsigned int quantity;
+
+    Limbs(const unsigned int quantity);
+  };
+
   typedef uint16_t limb_t;
   typedef uint32_t double_limb_t;
   typedef deque<limb_t> limbs_t;
@@ -66,6 +73,9 @@ private:
   }
 
   static Comparison compare(limbs_const_iter_t lhs_start,
+                            limbs_const_iter_t lhs_end, limb_t rhs);
+
+  static Comparison compare(limbs_const_iter_t lhs_start,
                             limbs_const_iter_t lhs_end,
                             limbs_const_iter_t rhs_start,
                             limbs_const_iter_t rhs_end);
@@ -102,10 +112,18 @@ private:
                               limbs_const_iter_t rhs_start,
                               limbs_const_iter_t rhs_end);
 
+  static void egcd(const BigInt &a, const BigInt &b, const BigInt &b_orig,
+                   BigInt &g, BigInt &x, BigInt &y);
+
 public:
   BigInt() = default;
   BigInt(uint64_t n);
   BigInt(const string &str);
+
+  friend bool operator==(const BigInt &lhs, limb_t rhs);
+
+  friend bool operator<(const BigInt &lhs, const BigInt &rhs);
+  friend bool operator>(const BigInt &lhs, const BigInt &rhs);
 
   BigInt &operator+=(limb_t rhs);
   BigInt &operator+=(const BigInt &rhs);
@@ -120,8 +138,23 @@ public:
   static void div_mod(const BigInt &lhs, const BigInt &rhs, BigInt &div,
                       BigInt &mod);
 
+  static BigInt mod_inv(const BigInt &b, const BigInt &n);
+
+  friend BigInt &operator<<=(BigInt &lhs, const Limbs &rhs);
+  friend BigInt &operator>>=(BigInt &lhs, const Limbs &rhs);
+
   friend istream &operator>>(istream &is, BigInt &value);
   friend ostream &operator<<(ostream &os, const BigInt &value);
 
+  // The number of limbs
+  size_t size();
+
+  // Remove leading zeros
   void trim();
 };
+
+BigInt operator+(const BigInt &lhs, BigInt::limb_t rhs);
+BigInt operator+(const BigInt &lhs, const BigInt &rhs);
+
+BigInt operator-(const BigInt &lhs, BigInt::limb_t rhs);
+BigInt operator-(const BigInt &lhs, const BigInt &rhs);
