@@ -10,23 +10,21 @@ using std::endl;
 int main() {
   BigInt a, b;
 
-  for (int n = 0; n < 17; ++n) {
+  for (long n = 0; n < 13; ++n) {
     a += 1;
   }
 
-  for (int n = 0; n < 14; ++n) {
+  for (int n = 0; n < 7; ++n) {
     b += 1;
   }
 
   cout << "A:" << a << endl;
   cout << "B:" << b << endl;
 
-  BigInt c;
+  BigInt::limb_t c = a / b;
 
-  c += a;
-  c -= b;
-
-  cout << "C = A - B:" << c << endl;
+  cout << "C = A / B:" << c << endl;
+  cout << "A % B:" << a << endl;
 
   return EXIT_SUCCESS;
 }
