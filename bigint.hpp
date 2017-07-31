@@ -1,14 +1,19 @@
 #pragma once
 
+#include <climits>
 #include <cstdint>
 #include <deque>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 
 using std::ios;
 using std::deque;
+using std::domain_error;
 using std::invalid_argument;
+using std::istream;
 using std::ostream;
+using std::string;
 using std::underflow_error;
 
 class BigInt {
@@ -20,6 +25,13 @@ public:
   typedef limbs_t::const_iterator limbs_const_iter_t;
   typedef limbs_t::difference_type limbs_difference_t;
 
+  static constexpr size_t HEX_BITS = 4;
+  static constexpr size_t HEX_MODULUS = 1 << BigInt::HEX_BITS;
+  static constexpr size_t LIMB_WIDTH = 4;
+  static constexpr double_limb_t LIMB_MODULUS = 1 << BigInt::LIMB_WIDTH;
+  static constexpr double_limb_t LIMB_MASK = BigInt::LIMB_MODULUS - 1;
+  static constexpr size_t HEX_CHARS_PER_LIMB = LIMB_WIDTH / HEX_BITS;
+
 private:
   limbs_t limbs;
 
@@ -28,6 +40,10 @@ private:
 
   // Remove leading zeros
   static void remove_leading_zeros(limbs_t &limbs);
+
+  // Add a limb as the most significant limb
+  void append_limb(string limb_str);
+  void append_limb(unsigned long int limb);
 
   // Split a double limb into two limbs
   static void split_double_limb(double_limb_t d, double_limb_t &large,
@@ -82,10 +98,14 @@ private:
                                limbs_const_iter_t rhs_start,
                                limbs_const_iter_t rhs_end);
 
+  static BigInt long_division(limbs_iter_t lhs_start, limbs_iter_t lhs_end,
+                              limbs_const_iter_t rhs_start,
+                              limbs_const_iter_t rhs_end);
+
 public:
-  static const double_limb_t LIMB_WIDTH;
-  static const double_limb_t LIMB_MODULUS;
-  static const double_limb_t LIMB_MASK;
+  BigInt() = default;
+  BigInt(uint64_t n);
+  BigInt(const string &str);
 
   BigInt &operator+=(limb_t rhs);
   BigInt &operator+=(const BigInt &rhs);
@@ -96,8 +116,11 @@ public:
   BigInt operator*(limb_t rhs) const;
   BigInt operator*(const BigInt &rhs) const;
 
-  limb_t operator/(const BigInt &rhs);
+  static void div_mod(BigInt &lhs, const BigInt &rhs, BigInt &div);
+  static void div_mod(const BigInt &lhs, const BigInt &rhs, BigInt &div,
+                      BigInt &mod);
 
+  friend istream &operator>>(istream &is, BigInt &value);
   friend ostream &operator<<(ostream &os, const BigInt &value);
 
   void trim();

@@ -1,8 +1,29 @@
 #include "bigint.hpp"
 
-const BigInt::double_limb_t BigInt::LIMB_WIDTH = 1;
-const BigInt::double_limb_t BigInt::LIMB_MODULUS = 1 << BigInt::LIMB_WIDTH;
-const BigInt::double_limb_t BigInt::LIMB_MASK = BigInt::LIMB_MODULUS - 1;
+BigInt::BigInt(uint64_t n) {
+  while (n > 0) {
+    limbs.push_back(n & LIMB_MASK);
+    n >>= LIMB_WIDTH;
+  }
+}
+
+BigInt::BigInt(const string &str) {
+  size_t n = str.length() - HEX_CHARS_PER_LIMB;
+
+  while (true) {
+    append_limb(str.substr(n, HEX_CHARS_PER_LIMB));
+
+    if (n <= HEX_CHARS_PER_LIMB) {
+      break;
+    } else {
+      n -= HEX_CHARS_PER_LIMB;
+    }
+  }
+
+  if (n > 0) {
+    append_limb(str.substr(0, n));
+  }
+}
 
 void BigInt::maybe_add_leading_zero(limbs_t &limbs, limbs_iter_t &iter) {
   if (iter == limbs.end()) {
@@ -16,6 +37,30 @@ void BigInt::remove_leading_zeros(limbs_t &limbs) {
   while (!limbs.empty() && limbs.back() == 0) {
     limbs.pop_back();
   }
+}
+
+void BigInt::append_limb(string limb_str) {
+  if (limb_str.empty()) {
+    throw invalid_argument("limb string cannot be empty");
+  }
+
+  char *limb_end = nullptr;
+
+  unsigned long int limb = strtoul(limb_str.data(), &limb_end, HEX_MODULUS);
+
+  if (*limb_end != 0) {
+    throw invalid_argument("limb string contains invalid character");
+  }
+
+  append_limb(limb);
+}
+
+void BigInt::append_limb(unsigned long int limb) {
+  if (limb > LIMB_MASK) {
+    throw invalid_argument("limb value out of range");
+  }
+
+  limbs.push_back(limb);
 }
 
 void BigInt::split_double_limb(double_limb_t d, double_limb_t &large,
@@ -188,7 +233,7 @@ BigInt::limb_t BigInt::short_division(limbs_iter_t lhs_start,
   limb_t result = 0;
 
   if (rhs_start > first_non_zero(rhs_start, rhs_end)) {
-    throw invalid_argument("Divide by zero!");
+    throw domain_error("Divide by zero!");
   }
 
   while (compare(lhs_start, lhs_end, rhs_start, rhs_end) !=
@@ -200,9 +245,38 @@ BigInt::limb_t BigInt::short_division(limbs_iter_t lhs_start,
   return result;
 }
 
-BigInt::limb_t BigInt::operator/(const BigInt &rhs) {
-  return short_division(limbs.begin(), limbs.end(), rhs.limbs.cbegin(),
-                        rhs.limbs.cend());
+BigInt BigInt::long_division(limbs_iter_t lhs_start, limbs_iter_t lhs_end,
+                             limbs_const_iter_t rhs_start,
+                             limbs_const_iter_t rhs_end) {
+  BigInt result;
+
+  for (auto lhs_iter = lhs_end; lhs_iter >= lhs_start; --lhs_iter) {
+    result.limbs.push_front(
+        short_division(lhs_iter, lhs_end, rhs_start, rhs_end));
+  }
+
+  return result;
+}
+
+void BigInt::div_mod(BigInt &lhs, const BigInt &rhs, BigInt &div) {
+  div = long_division(lhs.limbs.begin(), lhs.limbs.end(), rhs.limbs.cbegin(),
+                      rhs.limbs.cend());
+}
+
+void BigInt::div_mod(const BigInt &lhs, const BigInt &rhs, BigInt &div,
+                     BigInt &mod) {
+  mod = lhs;
+  div_mod(mod, rhs, div);
+}
+
+istream &operator>>(istream &is, BigInt &value) {
+  string value_str;
+
+  is >> value_str;
+
+  value = BigInt(value_str);
+
+  return is;
 }
 
 ostream &operator<<(ostream &os, const BigInt &value) {

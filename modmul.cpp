@@ -4,27 +4,25 @@
 
 #include "bigint.hpp"
 
+using std::cin;
 using std::cout;
 using std::endl;
 
 int main() {
-  BigInt a, b;
+  BigInt a;
+  BigInt b;
 
-  for (long n = 0; n < 13; ++n) {
-    a += 1;
-  }
-
-  for (int n = 0; n < 7; ++n) {
-    b += 1;
-  }
+  cin >> a >> b;
 
   cout << "A:" << a << endl;
   cout << "B:" << b << endl;
 
-  BigInt::limb_t c = a / b;
+  BigInt a_div_b, a_mod_b;
 
-  cout << "C = A / B:" << c << endl;
-  cout << "A % B:" << a << endl;
+  BigInt::div_mod(a, b, a_div_b, a_mod_b);
+
+  cout << "A / B:" << a_div_b << endl;
+  cout << "A % B:" << a_mod_b << endl;
 
   return EXIT_SUCCESS;
 }
