@@ -12,6 +12,8 @@ private:
 
   const ModIntFactory &factory;
 
+  void reduce();
+
 public:
   ModInt(BigInt value, const ModIntFactory &factory);
 

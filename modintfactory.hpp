@@ -9,12 +9,13 @@ class ModIntFactory;
 class ModIntFactory {
 private:
   BigInt mod;
-  BigInt neg_inv_mod;
   BigInt range;
   BigInt conversion_factor;
 
 public:
-  ModIntFactory(BigInt mod);
+  ModIntFactory(const BigInt &modulus);
+
+  ModInt create_int(const BigInt &value);
 
   friend class ModInt;
 };

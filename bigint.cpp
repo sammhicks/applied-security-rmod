@@ -27,6 +27,10 @@ BigInt::BigInt(const string &str) {
   }
 }
 
+BigInt::limb_t BigInt::least_significant_limb() const {
+  return limbs.empty() ? 0 : limbs.front();
+}
+
 void BigInt::maybe_add_leading_zero(limbs_t &limbs, limbs_iter_t &iter) {
   if (iter == limbs.end()) {
     limbs.push_back(0);
@@ -330,6 +334,20 @@ void BigInt::div_mod(const BigInt &lhs, const BigInt &rhs, BigInt &div,
   div_mod(mod, rhs, div);
 }
 
+void BigInt::egcd(long a, long b, long &g, long &x, long &y) {
+  if (a == 0) {
+    g = b;
+    x = 0;
+    y = 1;
+  } else {
+    long x_prime, y_prime;
+    egcd(b % a, a, g, x_prime, y_prime);
+
+    x = y_prime - b / a * x_prime;
+    y = x_prime;
+  }
+}
+
 void BigInt::egcd(const BigInt &a, const BigInt &b, const BigInt &b_orig,
                   BigInt &g, BigInt &x, BigInt &y) {
   if (a == 0) {
@@ -351,6 +369,16 @@ void BigInt::egcd(const BigInt &a, const BigInt &b, const BigInt &b_orig,
 
     x = y_prime - y_sub;
     y = x_prime;
+  }
+}
+
+long BigInt::mod_inv(long b, long n) {
+  long g, x, y;
+  egcd(b, n, g, x, y);
+  if (g == 1) {
+    return x;
+  } else {
+    throw invalid_argument("cannot calculate mod inv!");
   }
 }
 

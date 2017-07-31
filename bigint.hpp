@@ -112,6 +112,7 @@ private:
                               limbs_const_iter_t rhs_start,
                               limbs_const_iter_t rhs_end);
 
+  static void egcd(long a, long b, long &g, long &x, long &y);
   static void egcd(const BigInt &a, const BigInt &b, const BigInt &b_orig,
                    BigInt &g, BigInt &x, BigInt &y);
 
@@ -119,6 +120,8 @@ public:
   BigInt() = default;
   BigInt(uint64_t n);
   BigInt(const string &str);
+
+  limb_t least_significant_limb() const;
 
   friend bool operator==(const BigInt &lhs, limb_t rhs);
 
@@ -138,6 +141,7 @@ public:
   static void div_mod(const BigInt &lhs, const BigInt &rhs, BigInt &div,
                       BigInt &mod);
 
+  static long mod_inv(long b, long n);
   static BigInt mod_inv(const BigInt &b, const BigInt &n);
 
   friend BigInt &operator<<=(BigInt &lhs, const Limbs &rhs);
