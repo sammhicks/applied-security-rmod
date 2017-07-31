@@ -151,7 +151,7 @@ public:
   friend ostream &operator<<(ostream &os, const BigInt &value);
 
   // The number of limbs
-  size_t size();
+  size_t size() const;
 
   // Remove leading zeros
   void trim();

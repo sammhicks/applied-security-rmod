@@ -9,7 +9,6 @@ class ModIntFactory;
 class ModIntFactory {
 private:
   BigInt mod;
-  BigInt range;
   BigInt conversion_factor;
 
 public:

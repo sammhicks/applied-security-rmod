@@ -9,13 +9,18 @@ class ModInt;
 class ModInt {
 private:
   BigInt value;
+  const ModIntFactory *const factory;
 
-  const ModIntFactory &factory;
+  ModInt(BigInt value, const ModIntFactory *const factory);
+
+  static void reduce(BigInt &value, const ModIntFactory &factory);
 
   void reduce();
 
 public:
-  ModInt(BigInt value, const ModIntFactory &factory);
+  operator BigInt() const;
+
+  friend ModInt operator*(const ModInt &a, const ModInt &b);
 
   friend class ModIntFactory;
 };

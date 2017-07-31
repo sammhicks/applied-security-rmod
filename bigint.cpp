@@ -257,6 +257,7 @@ void BigInt::multiply_by_limb(limbs_t &acc_limbs, limbs_iter_t acc_iter,
                               limbs_const_iter_t lhs_iter,
                               limbs_const_iter_t lhs_end, limb_t rhs) {
   while (lhs_iter != lhs_end) {
+    maybe_add_leading_zero(acc_limbs, acc_iter);
     add_limb(acc_limbs, acc_iter, static_cast<double_limb_t>(rhs) * *lhs_iter);
 
     ++acc_iter;
@@ -286,6 +287,7 @@ BigInt BigInt::operator*(limb_t rhs) const {
 
 BigInt BigInt::operator*(const BigInt &rhs) const {
   BigInt result;
+
   multiply_by_big_int(result.limbs, result.limbs.begin(), limbs.cbegin(),
                       limbs.cend(), rhs.limbs.cbegin(), rhs.limbs.cend());
   return result;
@@ -343,7 +345,7 @@ void BigInt::egcd(long a, long b, long &g, long &x, long &y) {
     long x_prime, y_prime;
     egcd(b % a, a, g, x_prime, y_prime);
 
-    x = y_prime - b / a * x_prime;
+    x = y_prime - (b / a) * x_prime;
     y = x_prime;
   }
 }
@@ -433,6 +435,6 @@ ostream &operator<<(ostream &os, const BigInt &value) {
   return os;
 }
 
-size_t BigInt::size() { return limbs.size(); }
+size_t BigInt::size() const { return limbs.size(); }
 
 void BigInt::trim() { remove_leading_zeros(limbs); }
