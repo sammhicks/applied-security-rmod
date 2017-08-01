@@ -136,17 +136,23 @@ bool operator==(const BigInt &lhs, BigInt::limb_t rhs) {
          BigInt::Comparison::EQUALS;
 }
 
+bool operator!=(const BigInt &lhs, BigInt::limb_t rhs) { return !(lhs == rhs); }
+
 bool operator<(const BigInt &lhs, const BigInt &rhs) {
   return BigInt::compare(lhs.limbs.cbegin(), lhs.limbs.cend(),
                          rhs.limbs.cbegin(),
                          rhs.limbs.cend()) == BigInt::Comparison::LESS_THAN;
 }
 
+bool operator<=(const BigInt &lhs, BigInt::limb_t rhs) { return !(lhs > rhs); }
+
 bool operator>(const BigInt &lhs, const BigInt &rhs) {
   return BigInt::compare(lhs.limbs.cbegin(), lhs.limbs.cend(),
                          rhs.limbs.cbegin(),
                          rhs.limbs.cend()) == BigInt::Comparison::GREATER_THAN;
 }
+
+bool operator>=(const BigInt &lhs, BigInt::limb_t rhs) { return !(lhs < rhs); }
 
 void BigInt::add_limb(limbs_t &lhs_limbs, limbs_iter_t lhs_iter,
                       double_limb_t rhs) {
@@ -334,6 +340,12 @@ void BigInt::div_mod(const BigInt &lhs, const BigInt &rhs, BigInt &div,
                      BigInt &mod) {
   mod = lhs;
   div_mod(mod, rhs, div);
+}
+
+BigInt &BigInt::operator%=(const BigInt &rhs) {
+  long_division(limbs.begin(), limbs.end(), rhs.limbs.cbegin(),
+                rhs.limbs.cend());
+  return *this;
 }
 
 void BigInt::egcd(long a, long b, long &g, long &x, long &y) {

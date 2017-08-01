@@ -1,6 +1,7 @@
 #pragma once
 
 #include <climits>
+#include <cstddef>
 #include <cstdint>
 #include <deque>
 #include <iostream>
@@ -25,19 +26,21 @@ public:
     Limbs(const unsigned int quantity);
   };
 
+  typedef uint8_t bit_count_t;
   typedef uint16_t limb_t;
   typedef uint32_t double_limb_t;
   typedef deque<limb_t> limbs_t;
   typedef limbs_t::iterator limbs_iter_t;
   typedef limbs_t::const_iterator limbs_const_iter_t;
+  typedef limbs_t::const_reverse_iterator limbs_const_reverse_iter_t;
   typedef limbs_t::difference_type limbs_difference_t;
 
-  static constexpr size_t HEX_BITS = 4;
+  static constexpr bit_count_t HEX_BITS = 4;
   static constexpr size_t HEX_MODULUS = 1 << BigInt::HEX_BITS;
-  static constexpr size_t LIMB_WIDTH = 4;
+  static constexpr bit_count_t LIMB_WIDTH = 4;
   static constexpr double_limb_t LIMB_MODULUS = 1 << BigInt::LIMB_WIDTH;
   static constexpr double_limb_t LIMB_MASK = BigInt::LIMB_MODULUS - 1;
-  static constexpr size_t HEX_CHARS_PER_LIMB = LIMB_WIDTH / HEX_BITS;
+  static constexpr bit_count_t HEX_CHARS_PER_LIMB = LIMB_WIDTH / HEX_BITS;
 
 private:
   limbs_t limbs;
@@ -141,6 +144,8 @@ public:
   static void div_mod(const BigInt &lhs, const BigInt &rhs, BigInt &div,
                       BigInt &mod);
 
+  BigInt &operator%=(const BigInt &rhs);
+
   static long mod_inv(long b, long n);
   static BigInt mod_inv(const BigInt &b, const BigInt &n);
 
@@ -155,6 +160,8 @@ public:
 
   // Remove leading zeros
   void trim();
+
+  friend class BitIterator;
 };
 
 BigInt operator+(const BigInt &lhs, BigInt::limb_t rhs);
@@ -162,3 +169,7 @@ BigInt operator+(const BigInt &lhs, const BigInt &rhs);
 
 BigInt operator-(const BigInt &lhs, BigInt::limb_t rhs);
 BigInt operator-(const BigInt &lhs, const BigInt &rhs);
+
+bool operator!=(const BigInt &lhs, const BigInt &rhs);
+bool operator<=(const BigInt &lhs, const BigInt &rhs);
+bool operator>=(const BigInt &lhs, const BigInt &rhs);

@@ -14,7 +14,7 @@ private:
 public:
   ModIntFactory(const BigInt &modulus);
 
-  ModInt create_int(const BigInt &value);
+  ModInt create_int(const BigInt &value) const;
 
   friend class ModInt;
 };

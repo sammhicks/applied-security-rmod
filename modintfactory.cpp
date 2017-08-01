@@ -8,11 +8,9 @@ ModIntFactory::ModIntFactory(const BigInt &modulus) : mod(modulus) {
 
   conversion_factor = range * range;
 
-  BigInt dummy;
-
-  BigInt::div_mod(conversion_factor, mod, dummy);
+  conversion_factor %= mod;
 }
 
-ModInt ModIntFactory::create_int(const BigInt &value) {
+ModInt ModIntFactory::create_int(const BigInt &value) const {
   return ModInt(value * conversion_factor, this);
 }
