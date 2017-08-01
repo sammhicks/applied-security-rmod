@@ -13,9 +13,9 @@ int main() {
 
   // BigInt a, b, n;
 
-  BigInt a("1234");
-  BigInt b("5678");
-  BigInt n("9887");
+  BigInt a("123456");
+  BigInt b("876543");
+  BigInt n("3a8f05c5");
 
   // cin >> a >> b >> n;
 

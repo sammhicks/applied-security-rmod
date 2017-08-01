@@ -78,8 +78,7 @@ bool ModInt::sliding_window_k_check(ptrdiff_t log_n, ptrdiff_t k) {
 ptrdiff_t ModInt::power_to_array_index(ptrdiff_t p, ptrdiff_t count) {
   ptrdiff_t i = (p - 1) / 2;
   if ((i >= 0) && (i < count)) {
-    // std::cout << "Lookup: " << p << "(@" << i << ") of " << count <<
-    // std::endl;
+    std::cout << "Lookup: " << p << "(@" << i << ") of " << count << std::endl;
 
     return i;
   } else {
@@ -130,6 +129,8 @@ ModInt ModInt::pow(const ModInt &x, const BigInt &n) {
 
   // 2.  while i > -1 do
   while (!i.is_finished()) {
+    std::cout << "current: " << static_cast<BigInt>(result) << std::endl;
+
     std::cout << "i: " << *i << std::endl;
     // 3.      if ni=0 then y:=y2' i:=i-1
     if (!*i) {
@@ -145,15 +146,17 @@ ModInt ModInt::pow(const ModInt &x, const BigInt &n) {
       i.clear_acc();
       BitIterator s = i;
 
-      ptrdiff_t i_s_difference = 0;
+      ptrdiff_t digits_included = 1;
 
       std::cout << "s looks ahead" << std::endl;
       // 5.          s:=max{i-k+1,0}
-      while (!s.is_finished() && i_s_difference < k) {
+      while (!s.is_finished() && digits_included < k) {
         std::cout << "s:";
         ++s;
-        ++i_s_difference;
+        ++digits_included;
       }
+
+      std::cout << "digits included: " << digits_included << std::endl;
 
       std::cout << "backtracking" << std::endl;
 
@@ -168,6 +171,7 @@ ModInt ModInt::pow(const ModInt &x, const BigInt &n) {
         ++i;
         result = result * result;
       }
+      result = result * result;
       // 8.          u:=(ni,ni-1,....,ns)2
       // 9.          y:=y*xu
       std::cout << std::endl
