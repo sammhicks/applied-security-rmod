@@ -10,9 +10,14 @@ using std::cout;
 using std::endl;
 
 int main() {
-  BigInt a, b, n;
 
-  cin >> a >> b >> n;
+  // BigInt a, b, n;
+
+  BigInt a("1234");
+  BigInt b("5678");
+  BigInt n("9887");
+
+  // cin >> a >> b >> n;
 
   cout << "A:" << a << endl;
   cout << "B:" << b << endl;
@@ -21,9 +26,16 @@ int main() {
   ModIntFactory factory(n);
 
   ModInt a_mod = factory.create_int(a);
-  ModInt b_mod = factory.create_int(b);
 
-  cout << "A * B = " << static_cast<BigInt>(a_mod * b_mod) << endl;
+  cout << "A ^ B = " << static_cast<BigInt>(a_mod.pow(b)) << endl;
+
+  /*BigInt a("ac0");
+
+  ModIntFactory factory(BigInt("9887"));
+
+  ModInt a_mod = factory.create_int(a);
+
+  cout << static_cast<BigInt>(a_mod * a_mod) << std::endl;*/
 
   return EXIT_SUCCESS;
 }

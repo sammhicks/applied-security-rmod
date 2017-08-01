@@ -1,6 +1,12 @@
 #pragma once
 
+#include <algorithm>
+#include <bitset> // Only for debug
+
 #include "bigint.hpp"
+#include "bititerator.hpp"
+
+using std::out_of_range;
 
 class ModInt;
 
@@ -20,7 +26,7 @@ private:
 
   static bool sliding_window_k_check(ptrdiff_t log_n, ptrdiff_t k);
 
-  static ptrdiff_t power_to_array_index(ptrdiff_t p);
+  static ptrdiff_t power_to_array_index(ptrdiff_t p, ptrdiff_t count);
 
 public:
   operator BigInt() const;
@@ -30,6 +36,7 @@ public:
   friend ModInt operator*(const ModInt &a, const ModInt &b);
 
   // calculate x^n
+  ModInt pow(const BigInt &n) const;
   static ModInt pow(const ModInt &x, const BigInt &n);
 
   friend class ModIntFactory;
