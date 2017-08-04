@@ -17,8 +17,6 @@ bool BitIterator::operator*() const {
 }
 
 void BitIterator::operator++() {
-  /*std::cout << "Incrementing from " << this->get_acc() << " with "
-            << static_cast<int>(bits_remaining) << " bits remaining to ";*/
   bit_acc += **this ? 1 : 0;
   bit_acc <<= 1;
 
@@ -28,18 +26,9 @@ void BitIterator::operator++() {
     ++current_limb;
     bits_remaining = BigInt::LIMB_WIDTH;
   }
-
-  /*if (is_finished()) {
-    std::cout << "Finished iterator" << std::endl;
-  } else {
-    std::cout << this->get_acc() << " with " << static_cast<int>(bits_remaining)
-              << " bits remaining" << std::endl;
-  }*/
 }
 
 void BitIterator::operator--() {
-  /*std::cout << "Decrementing from " << **this << " with "
-            << static_cast<int>(bits_remaining) << " bits remaining to ";*/
   bit_acc >>= 1;
   // Clear the LSB
   bit_acc &= (~1);
@@ -50,9 +39,6 @@ void BitIterator::operator--() {
     --current_limb;
     bits_remaining = 1;
   }
-
-  /*std::cout << **this << " with " << static_cast<int>(bits_remaining)
-            << " bits remaining" << std::endl;*/
 }
 
 bool BitIterator::operator==(const BitIterator &other) const {

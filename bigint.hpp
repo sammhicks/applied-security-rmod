@@ -8,8 +8,9 @@
 #include <stdexcept>
 #include <string>
 
+//#include "list.hpp"
+
 using std::ios;
-using std::deque;
 using std::domain_error;
 using std::invalid_argument;
 using std::istream;
@@ -26,30 +27,31 @@ public:
     Limbs(const unsigned int quantity);
   };
 
-  typedef uint8_t bit_count_t;
-  typedef uint16_t limb_t;
+  typedef uint8_t bit_count_type;
+  typedef uint16_t limb_type;
   typedef uint32_t double_limb_t;
-  typedef deque<limb_t> limbs_t;
-  typedef limbs_t::iterator limbs_iter_t;
-  typedef limbs_t::const_iterator limbs_const_iter_t;
-  typedef limbs_t::const_reverse_iterator limbs_const_reverse_iter_t;
-  typedef limbs_t::difference_type limbs_difference_t;
+  typedef std::deque<limb_type> limbs_type;
+  typedef limbs_type::difference_type index_type;
+  typedef limbs_type::const_iterator limbs_const_iter_type;
+  typedef limbs_type::const_reverse_iterator limbs_const_reverse_iter_type;
+  typedef limbs_type::difference_type limbs_difference_type;
+  typedef limbs_type::size_type size_type;
 
-  static constexpr bit_count_t HEX_BITS = 4;
-  static constexpr size_t HEX_MODULUS = 1 << BigInt::HEX_BITS;
-  static constexpr bit_count_t LIMB_WIDTH = 4;
+  static constexpr bit_count_type HEX_BITS = 4;
+  static constexpr size_type HEX_MODULUS = 1 << BigInt::HEX_BITS;
+  static constexpr bit_count_type LIMB_WIDTH = 16;
   static constexpr double_limb_t LIMB_MODULUS = 1 << BigInt::LIMB_WIDTH;
   static constexpr double_limb_t LIMB_MASK = BigInt::LIMB_MODULUS - 1;
-  static constexpr bit_count_t HEX_CHARS_PER_LIMB = LIMB_WIDTH / HEX_BITS;
+  static constexpr bit_count_type HEX_CHARS_PER_LIMB = LIMB_WIDTH / HEX_BITS;
 
 private:
-  limbs_t limbs;
+  limbs_type limbs;
 
   // Add a leading zero if the iterator is off the end
-  static void maybe_add_leading_zero(limbs_t &limbs, limbs_iter_t &iter);
+  static void maybe_add_leading_zero(limbs_type &limbs, index_type index);
 
   // Remove leading zeros
-  static void remove_leading_zeros(limbs_t &limbs);
+  static void remove_leading_zeros(limbs_type &limbs);
 
   // Add a limb as the most significant limb
   void append_limb(string limb_str);
@@ -57,11 +59,11 @@ private:
 
   // Split a double limb into two limbs
   static void split_double_limb(double_limb_t d, double_limb_t &large,
-                                limb_t &small);
+                                limb_type &small);
 
   // Move lhs_iter backwards until it reaches lhs_start of a non-zero limb
-  static limbs_const_iter_t first_non_zero(limbs_const_iter_t start,
-                                           limbs_const_iter_t end);
+  static limbs_const_iter_type first_non_zero(limbs_const_iter_type start,
+                                              limbs_const_iter_type end);
 
   enum class Comparison { LESS_THAN = -1, EQUALS = 0, GREATER_THAN = 1 };
 
@@ -75,45 +77,45 @@ private:
     }
   }
 
-  static Comparison compare(limbs_const_iter_t lhs_start,
-                            limbs_const_iter_t lhs_end, limb_t rhs);
+  static Comparison compare(limbs_const_iter_type lhs_start,
+                            limbs_const_iter_type lhs_end, limb_type rhs);
 
-  static Comparison compare(limbs_const_iter_t lhs_start,
-                            limbs_const_iter_t lhs_end,
-                            limbs_const_iter_t rhs_start,
-                            limbs_const_iter_t rhs_end);
+  static Comparison compare(limbs_const_iter_type lhs_start,
+                            limbs_const_iter_type lhs_end,
+                            limbs_const_iter_type rhs_start,
+                            limbs_const_iter_type rhs_end);
 
   // lhs += rhs
-  static void add_limb(limbs_t &lhs_limbs, limbs_iter_t lhs_iter,
+  static void add_limb(limbs_type &lhs_limbs, limbs_iter_t &lhs_iter,
                        double_limb_t rhs);
-  static void add_big_int(limbs_t &lhs_limbs, limbs_iter_t lhs_iter,
-                          limbs_const_iter_t rhs_iter,
-                          limbs_const_iter_t rhs_end);
+  static void add_big_int(limbs_type &lhs_limbs, limbs_iter_t &lhs_iter,
+                          limbs_const_iter_type rhs_iter,
+                          limbs_const_iter_type rhs_end);
 
   // lhs -= rhs
   static void subtract_limb(limbs_iter_t lhs_iter, limbs_iter_t lhs_end,
-                            limb_t rhs);
+                            limb_type rhs);
   static void subtract_big_int(limbs_iter_t lhs_iter, limbs_iter_t lhs_end,
-                               limbs_const_iter_t rhs_iter,
-                               limbs_const_iter_t rhs_end);
+                               limbs_const_iter_type rhs_iter,
+                               limbs_const_iter_type rhs_end);
 
   // acc += lhs * rhs
-  static void multiply_by_limb(limbs_t &acc_limbs, limbs_iter_t acc_iter,
-                               limbs_const_iter_t lhs_iter,
-                               limbs_const_iter_t lhs_end, limb_t rhs);
-  static void multiply_by_big_int(limbs_t &acc_limbs, limbs_iter_t acc_iter,
-                                  limbs_const_iter_t lhs_iter,
-                                  limbs_const_iter_t lhs_end,
-                                  limbs_const_iter_t rhs_iter,
-                                  limbs_const_iter_t rhs_end);
+  static void multiply_by_limb(limbs_type &acc_limbs, limbs_iter_t acc_iter,
+                               limbs_const_iter_type lhs_iter,
+                               limbs_const_iter_type lhs_end, limb_type rhs);
+  static void multiply_by_big_int(limbs_type &acc_limbs, limbs_iter_t acc_iter,
+                                  limbs_const_iter_type lhs_iter,
+                                  limbs_const_iter_type lhs_end,
+                                  limbs_const_iter_type rhs_iter,
+                                  limbs_const_iter_type rhs_end);
 
-  static limb_t short_division(limbs_iter_t lhs_start, limbs_iter_t lhs_end,
-                               limbs_const_iter_t rhs_start,
-                               limbs_const_iter_t rhs_end);
+  static limb_type short_division(limbs_iter_t lhs_start, limbs_iter_t lhs_end,
+                                  limbs_const_iter_type rhs_start,
+                                  limbs_const_iter_type rhs_end);
 
   static BigInt long_division(limbs_iter_t lhs_start, limbs_iter_t lhs_end,
-                              limbs_const_iter_t rhs_start,
-                              limbs_const_iter_t rhs_end);
+                              limbs_const_iter_type rhs_start,
+                              limbs_const_iter_type rhs_end);
 
   static void egcd(long a, long b, long &g, long &x, long &y);
   static void egcd(const BigInt &a, const BigInt &b, const BigInt &b_orig,
@@ -124,20 +126,20 @@ public:
   BigInt(uint64_t n);
   BigInt(const string &str);
 
-  limb_t least_significant_limb() const;
+  limb_type least_significant_limb() const;
 
-  friend bool operator==(const BigInt &lhs, limb_t rhs);
+  friend bool operator==(const BigInt &lhs, limb_type rhs);
 
   friend bool operator<(const BigInt &lhs, const BigInt &rhs);
   friend bool operator>(const BigInt &lhs, const BigInt &rhs);
 
-  BigInt &operator+=(limb_t rhs);
+  BigInt &operator+=(limb_type rhs);
   BigInt &operator+=(const BigInt &rhs);
 
-  BigInt &operator-=(limb_t rhs);
+  BigInt &operator-=(limb_type rhs);
   BigInt &operator-=(const BigInt &rhs);
 
-  BigInt operator*(limb_t rhs) const;
+  BigInt operator*(limb_type rhs) const;
   BigInt operator*(const BigInt &rhs) const;
 
   static void div_mod(BigInt &lhs, const BigInt &rhs, BigInt &div);
@@ -156,7 +158,7 @@ public:
   friend ostream &operator<<(ostream &os, const BigInt &value);
 
   // The number of limbs
-  size_t size() const;
+  size_type size() const;
 
   // Remove leading zeros
   void trim();
@@ -164,10 +166,10 @@ public:
   friend class BitIterator;
 };
 
-BigInt operator+(const BigInt &lhs, BigInt::limb_t rhs);
+BigInt operator+(const BigInt &lhs, BigInt::limb_type rhs);
 BigInt operator+(const BigInt &lhs, const BigInt &rhs);
 
-BigInt operator-(const BigInt &lhs, BigInt::limb_t rhs);
+BigInt operator-(const BigInt &lhs, BigInt::limb_type rhs);
 BigInt operator-(const BigInt &lhs, const BigInt &rhs);
 
 bool operator!=(const BigInt &lhs, const BigInt &rhs);
