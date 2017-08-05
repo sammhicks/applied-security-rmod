@@ -31,14 +31,14 @@ public:
   typedef uint16_t limb_type;
   typedef uint32_t double_limb_t;
   typedef std::deque<limb_type> limbs_type;
-  typedef limbs_type::difference_type index_type;
+  typedef limbs_type::size_type limbs_index_type;
   typedef limbs_type::const_iterator limbs_const_iter_type;
   typedef limbs_type::const_reverse_iterator limbs_const_reverse_iter_type;
-  typedef limbs_type::difference_type limbs_difference_type;
-  typedef limbs_type::size_type size_type;
+  typedef limbs_type::difference_type limbs_index_difference_type;
+  typedef limbs_type::size_type limbs_size_type;
 
   static constexpr bit_count_type HEX_BITS = 4;
-  static constexpr size_type HEX_MODULUS = 1 << BigInt::HEX_BITS;
+  static constexpr size_t HEX_MODULUS = 1 << BigInt::HEX_BITS;
   static constexpr bit_count_type LIMB_WIDTH = 16;
   static constexpr double_limb_t LIMB_MODULUS = 1 << BigInt::LIMB_WIDTH;
   static constexpr double_limb_t LIMB_MASK = BigInt::LIMB_MODULUS - 1;
@@ -48,7 +48,7 @@ private:
   limbs_type limbs;
 
   // Add a leading zero if the iterator is off the end
-  static void maybe_add_leading_zero(limbs_type &limbs, index_type index);
+  static void maybe_add_leading_zero(limbs_type &limbs, limbs_index_type index);
 
   // Remove leading zeros
   static void remove_leading_zeros(limbs_type &limbs);
@@ -86,34 +86,38 @@ private:
                             limbs_const_iter_type rhs_end);
 
   // lhs += rhs
-  static void add_limb(limbs_type &lhs_limbs, limbs_iter_t &lhs_iter,
+  static void add_limb(limbs_type &lhs_limbs, limbs_index_type lhs_index,
                        double_limb_t rhs);
-  static void add_big_int(limbs_type &lhs_limbs, limbs_iter_t &lhs_iter,
+  static void add_big_int(limbs_type &lhs_limbs, limbs_index_type lhs_index,
                           limbs_const_iter_type rhs_iter,
                           limbs_const_iter_type rhs_end);
 
   // lhs -= rhs
-  static void subtract_limb(limbs_iter_t lhs_iter, limbs_iter_t lhs_end,
+  static void subtract_limb(limbs_type &lhs_limbs, limbs_index_type lhs_index,
                             limb_type rhs);
-  static void subtract_big_int(limbs_iter_t lhs_iter, limbs_iter_t lhs_end,
+  static void subtract_big_int(limbs_type &lhs_limbs,
+                               limbs_index_type lhs_index,
                                limbs_const_iter_type rhs_iter,
                                limbs_const_iter_type rhs_end);
 
   // acc += lhs * rhs
-  static void multiply_by_limb(limbs_type &acc_limbs, limbs_iter_t acc_iter,
+  static void multiply_by_limb(limbs_type &acc_limbs,
+                               limbs_index_type acc_index,
                                limbs_const_iter_type lhs_iter,
                                limbs_const_iter_type lhs_end, limb_type rhs);
-  static void multiply_by_big_int(limbs_type &acc_limbs, limbs_iter_t acc_iter,
+  static void multiply_by_big_int(limbs_type &acc_limbs,
+                                  limbs_index_type acc_index,
                                   limbs_const_iter_type lhs_iter,
                                   limbs_const_iter_type lhs_end,
                                   limbs_const_iter_type rhs_iter,
                                   limbs_const_iter_type rhs_end);
 
-  static limb_type short_division(limbs_iter_t lhs_start, limbs_iter_t lhs_end,
+  static limb_type short_division(limbs_type &lhs_limbs,
+                                  limbs_index_type lhs_index,
                                   limbs_const_iter_type rhs_start,
                                   limbs_const_iter_type rhs_end);
 
-  static BigInt long_division(limbs_iter_t lhs_start, limbs_iter_t lhs_end,
+  static BigInt long_division(limbs_type &lhs_limbs, limbs_index_type lhs_index,
                               limbs_const_iter_type rhs_start,
                               limbs_const_iter_type rhs_end);
 
@@ -158,12 +162,10 @@ public:
   friend ostream &operator<<(ostream &os, const BigInt &value);
 
   // The number of limbs
-  size_type size() const;
+  // size_type limb_count() const;
 
   // Remove leading zeros
   void trim();
-
-  friend class BitIterator;
 };
 
 BigInt operator+(const BigInt &lhs, BigInt::limb_type rhs);

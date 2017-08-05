@@ -27,19 +27,17 @@ BigInt::BigInt(const string &str) {
   }
 }
 
-BigInt::limb_t BigInt::least_significant_limb() const {
+BigInt::limb_type BigInt::least_significant_limb() const {
   return limbs.empty() ? 0 : limbs.front();
 }
 
-void BigInt::maybe_add_leading_zero(limbs_t &limbs, limbs_iter_t &iter) {
-  if (iter == limbs.end()) {
+void BigInt::maybe_add_leading_zero(limbs_type &limbs, limbs_index_type index) {
+  while (index <= limbs.size()) {
     limbs.push_back(0);
-    iter = limbs.end();
-    --iter;
   }
 }
 
-void BigInt::remove_leading_zeros(limbs_t &limbs) {
+void BigInt::remove_leading_zeros(limbs_type &limbs) {
   while (!limbs.empty() && limbs.back() == 0) {
     limbs.pop_back();
   }
@@ -69,8 +67,8 @@ void BigInt::append_limb(unsigned long int limb) {
   limbs.push_back(limb);
 }
 
-void BigInt::split_double_limb(double_limb_t d, double_limb_t &large,
-                               limb_t &small) {
+void BigInt::split_double_limb(double_limb_type d, double_limb_type &large,
+                               limb_type &small) {
   small = d & LIMB_MASK;
   large = (d >> LIMB_WIDTH) & LIMB_MASK;
 }
@@ -87,14 +85,14 @@ BigInt::limbs_const_iter_t BigInt::first_non_zero(limbs_const_iter_t start,
 }
 
 BigInt::Comparison BigInt::compare(limbs_const_iter_t lhs_start,
-                                   limbs_const_iter_t lhs_end, limb_t rhs) {
+                                   limbs_const_iter_t lhs_end, limb_type rhs) {
   limbs_const_iter_t lhs_iter = first_non_zero(lhs_start, lhs_end);
 
   switch (compare<limbs_const_iter_t>(lhs_iter, lhs_start)) {
     case Comparison::LESS_THAN:
-      return compare<limb_t>(0, rhs);
+      return compare<limb_type>(0, rhs);
     case Comparison::EQUALS:
-      return compare<limb_t>(*lhs_iter, rhs);
+      return compare<limb_type>(*lhs_iter, rhs);
     default:
       return Comparison::GREATER_THAN;
   }
@@ -117,7 +115,7 @@ BigInt::Comparison BigInt::compare(limbs_const_iter_t lhs_start,
     return length_comparison;
   } else {
     while (lhs_iter >= lhs_start && rhs_iter >= rhs_start) {
-      Comparison value_comparison = compare<limb_t>(*lhs_iter, *rhs_iter);
+      Comparison value_comparison = compare<limb_type>(*lhs_iter, *rhs_iter);
 
       if (value_comparison != Comparison::EQUALS) {
         return value_comparison;
@@ -131,12 +129,14 @@ BigInt::Comparison BigInt::compare(limbs_const_iter_t lhs_start,
   }
 }
 
-bool operator==(const BigInt &lhs, BigInt::limb_t rhs) {
+bool operator==(const BigInt &lhs, BigInt::limb_type rhs) {
   return BigInt::compare(lhs.limbs.cbegin(), lhs.limbs.cend(), rhs) ==
          BigInt::Comparison::EQUALS;
 }
 
-bool operator!=(const BigInt &lhs, BigInt::limb_t rhs) { return !(lhs == rhs); }
+bool operator!=(const BigInt &lhs, BigInt::limb_type rhs) {
+  return !(lhs == rhs);
+}
 
 bool operator<(const BigInt &lhs, const BigInt &rhs) {
   return BigInt::compare(lhs.limbs.cbegin(), lhs.limbs.cend(),
@@ -144,7 +144,9 @@ bool operator<(const BigInt &lhs, const BigInt &rhs) {
                          rhs.limbs.cend()) == BigInt::Comparison::LESS_THAN;
 }
 
-bool operator<=(const BigInt &lhs, BigInt::limb_t rhs) { return !(lhs > rhs); }
+bool operator<=(const BigInt &lhs, BigInt::limb_type rhs) {
+  return !(lhs > rhs);
+}
 
 bool operator>(const BigInt &lhs, const BigInt &rhs) {
   return BigInt::compare(lhs.limbs.cbegin(), lhs.limbs.cend(),
@@ -152,40 +154,35 @@ bool operator>(const BigInt &lhs, const BigInt &rhs) {
                          rhs.limbs.cend()) == BigInt::Comparison::GREATER_THAN;
 }
 
-bool operator>=(const BigInt &lhs, BigInt::limb_t rhs) { return !(lhs < rhs); }
+bool operator>=(const BigInt &lhs, BigInt::limb_type rhs) {
+  return !(lhs < rhs);
+}
 
-void BigInt::add_limb(limbs_t &lhs_limbs, limbs_iter_t &lhs_iter,
+void BigInt::add_limb(limbs_type &lhs_limbs, limbs_index_type lhs_index,
                       double_limb_t rhs) {
-  maybe_add_leading_zero(lhs_limbs, lhs_iter);
-  limbs_iter_t lhs_iter_copy = lhs_iter;
   if (rhs > 0) {
-    double_limb_t carry = 0;
+    maybe_add_leading_zero(limbs, lhs_index);
+    double_limb_type carry = 0;
 
-    split_double_limb(rhs + *lhs_iter_copy, carry, *lhs_iter_copy);
-
-    ++lhs_iter_copy;
+    split_double_limb(rhs + lhs_limbs[lhs_index], carry, lhs_limbs[lhs_index]);
 
     if (carry > 0) {
-      add_limb(lhs_limbs, lhs_iter_copy, carry);
+      add_limb(lhs_limbs, lhs_index + 1, carry);
     }
   }
 }
 
-void BigInt::add_big_int(limbs_t &lhs_limbs, limbs_iter_t &lhs_iter,
-                         limbs_const_iter_t rhs_iter,
-                         limbs_const_iter_t rhs_end) {
-  maybe_add_leading_zero(lhs_limbs, lhs_iter);
-  limbs_iter_t lhs_iter_copy = lhs_iter;
-
-  while (rhs_iter != rhs_end) {
+void BigInt::add_big_int(limbs_type &lhs_limbs, limbs_index_type lhs_index,
+                         limbs_const_iter_type rhs_iter,
+                         limbs_const_iter_type rhs_end) {
+  if (rhs_iter < rhs_end) {
     add_limb(lhs_limbs, lhs_iter_copy, *rhs_iter);
 
-    ++lhs_iter_copy;
-    ++rhs_iter;
+    add_big_int(lhs_limbs, lhs_index + 1, rhs_iter + 1, rhs_end);
   }
 }
 
-BigInt &BigInt::operator+=(limb_t rhs) {
+BigInt &BigInt::operator+=(limb_type rhs) {
   limbs_iter_t lhs_iter = limbs.begin();
   add_limb(limbs, lhs_iter, rhs);
 
@@ -199,7 +196,7 @@ BigInt &BigInt::operator+=(const BigInt &rhs) {
   return *this;
 }
 
-BigInt operator+(const BigInt &lhs, BigInt::limb_t rhs) {
+BigInt operator+(const BigInt &lhs, BigInt::limb_type rhs) {
   BigInt result = lhs;
   result += rhs;
   return result;
@@ -212,7 +209,7 @@ BigInt operator+(const BigInt &lhs, const BigInt &rhs) {
 }
 
 void BigInt::subtract_limb(limbs_iter_t lhs_iter, limbs_iter_t lhs_end,
-                           limb_t rhs) {
+                           limb_type rhs) {
   if (rhs > 0) {
     if (lhs_iter == lhs_end) {
       throw underflow_error("Negative number occurred when subtracting");
@@ -239,7 +236,7 @@ void BigInt::subtract_big_int(limbs_iter_t lhs_iter, limbs_iter_t lhs_end,
   }
 }
 
-BigInt &BigInt::operator-=(limb_t rhs) {
+BigInt &BigInt::operator-=(limb_type rhs) {
   subtract_limb(limbs.begin(), limbs.end(), rhs);
 
   return *this;
@@ -252,7 +249,7 @@ BigInt &BigInt::operator-=(const BigInt &rhs) {
   return *this;
 }
 
-BigInt operator-(const BigInt &lhs, BigInt::limb_t rhs) {
+BigInt operator-(const BigInt &lhs, BigInt::limb_type rhs) {
   BigInt result = lhs;
   result -= rhs;
   return result;
@@ -266,10 +263,11 @@ BigInt operator-(const BigInt &lhs, const BigInt &rhs) {
 
 void BigInt::multiply_by_limb(limbs_t &acc_limbs, limbs_iter_t acc_iter,
                               limbs_const_iter_t lhs_iter,
-                              limbs_const_iter_t lhs_end, limb_t rhs) {
+                              limbs_const_iter_t lhs_end, limb_type rhs) {
   while (lhs_iter != lhs_end) {
     maybe_add_leading_zero(acc_limbs, acc_iter);
-    add_limb(acc_limbs, acc_iter, static_cast<double_limb_t>(rhs) * *lhs_iter);
+    add_limb(acc_limbs, acc_iter,
+             static_cast<double_limb_type>(rhs) * *lhs_iter);
 
     ++acc_iter;
     ++lhs_iter;
@@ -290,7 +288,7 @@ void BigInt::multiply_by_big_int(limbs_t &acc_limbs, limbs_iter_t acc_iter,
   }
 }
 
-BigInt BigInt::operator*(limb_t rhs) const {
+BigInt BigInt::operator*(limb_type rhs) const {
   BigInt result;
   multiply_by_limb(result.limbs, result.limbs.begin(), limbs.cbegin(),
                    limbs.cend(), rhs);
@@ -305,11 +303,11 @@ BigInt BigInt::operator*(const BigInt &rhs) const {
   return result;
 }
 
-BigInt::limb_t BigInt::short_division(limbs_iter_t lhs_start,
-                                      limbs_iter_t lhs_end,
-                                      limbs_const_iter_t rhs_start,
-                                      limbs_const_iter_t rhs_end) {
-  limb_t result = 0;
+BigInt::limb_type BigInt::short_division(limbs_iter_t lhs_start,
+                                         limbs_iter_t lhs_end,
+                                         limbs_const_iter_t rhs_start,
+                                         limbs_const_iter_t rhs_end) {
+  limb_type result = 0;
 
   if (rhs_start > first_non_zero(rhs_start, rhs_end)) {
     throw domain_error("Divide by zero!");
