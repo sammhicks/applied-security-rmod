@@ -17,6 +17,7 @@ using std::istream;
 using std::ostream;
 using std::string;
 using std::underflow_error;
+using std::range_error;
 
 class BigInt {
 public:
@@ -29,19 +30,20 @@ public:
 
   typedef uint8_t bit_count_type;
   typedef uint16_t limb_type;
-  typedef uint32_t double_limb_t;
+  typedef uint32_t double_limb_type;
   typedef std::deque<limb_type> limbs_type;
   typedef limbs_type::size_type limbs_index_type;
   typedef limbs_type::const_iterator limbs_const_iter_type;
   typedef limbs_type::const_reverse_iterator limbs_const_reverse_iter_type;
   typedef limbs_type::difference_type limbs_index_difference_type;
   typedef limbs_type::size_type limbs_size_type;
+  typedef limbs_type::difference_type bit_index_type;
 
   static constexpr bit_count_type HEX_BITS = 4;
   static constexpr size_t HEX_MODULUS = 1 << BigInt::HEX_BITS;
   static constexpr bit_count_type LIMB_WIDTH = 16;
-  static constexpr double_limb_t LIMB_MODULUS = 1 << BigInt::LIMB_WIDTH;
-  static constexpr double_limb_t LIMB_MASK = BigInt::LIMB_MODULUS - 1;
+  static constexpr double_limb_type LIMB_MODULUS = 1 << BigInt::LIMB_WIDTH;
+  static constexpr double_limb_type LIMB_MASK = BigInt::LIMB_MODULUS - 1;
   static constexpr bit_count_type HEX_CHARS_PER_LIMB = LIMB_WIDTH / HEX_BITS;
 
 private:
@@ -58,7 +60,7 @@ private:
   void append_limb(unsigned long int limb);
 
   // Split a double limb into two limbs
-  static void split_double_limb(double_limb_t d, double_limb_t &large,
+  static void split_double_limb(double_limb_type d, double_limb_type &large,
                                 limb_type &small);
 
   // Move lhs_iter backwards until it reaches lhs_start of a non-zero limb
@@ -87,7 +89,7 @@ private:
 
   // lhs += rhs
   static void add_limb(limbs_type &lhs_limbs, limbs_index_type lhs_index,
-                       double_limb_t rhs);
+                       double_limb_type rhs);
   static void add_big_int(limbs_type &lhs_limbs, limbs_index_type lhs_index,
                           limbs_const_iter_type rhs_iter,
                           limbs_const_iter_type rhs_end);
@@ -155,6 +157,9 @@ public:
   static long mod_inv(long b, long n);
   static BigInt mod_inv(const BigInt &b, const BigInt &n);
 
+  bit_index_type log_2() const;
+  int operator[](const bit_index_type index) const;
+
   friend BigInt &operator<<=(BigInt &lhs, const Limbs &rhs);
   friend BigInt &operator>>=(BigInt &lhs, const Limbs &rhs);
 
@@ -162,7 +167,7 @@ public:
   friend ostream &operator<<(ostream &os, const BigInt &value);
 
   // The number of limbs
-  // size_type limb_count() const;
+  limbs_size_type limb_count() const;
 
   // Remove leading zeros
   void trim();

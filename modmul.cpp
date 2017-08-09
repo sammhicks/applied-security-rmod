@@ -26,35 +26,13 @@ int main() {
            "45617189AF82B5BA757F05011FA14979B70CBD848F568EE915F2FD700B6208A6159"
            "D6BADF40B98E05427CA0A6D35BA1C4C338C1F1CE25879CE510F874C");
 
-  /*ModIntFactory f(N);
+  ModIntFactory f(N);
 
   ModInt m_mod = f.create_int(m);
 
   cout << "Ready? Here goes..." << endl;
 
-  cout << static_cast<BigInt>(m_mod.pow(e)) << endl;*/
-
-  cout << "Creating Factory" << endl;
-
-  ModIntFactory f(N);
-
-  cout << "Creating m_mod" << endl;
-  ModInt m_mod = f.create_int(m);
-
-  cout << "Creating e_mod" << endl;
-  ModInt e_mod = f.create_int(m);
-
-  cout << "Multiplying..." << endl;
-
-  ModInt me_mod = m_mod * e_mod;
-
-  cout << "Loop..." << endl;
-
-  while (true) {
-    cout << static_cast<BigInt>(me_mod) << endl;
-
-    me_mod = me_mod * me_mod;
-  }
+  cout << static_cast<BigInt>(m_mod.pow(e)) << endl;
 
   return EXIT_SUCCESS;
 }

@@ -32,7 +32,7 @@ BigInt::limb_type BigInt::least_significant_limb() const {
 }
 
 void BigInt::maybe_add_leading_zero(limbs_type &limbs, limbs_index_type index) {
-  while (index <= limbs.size()) {
+  while (index >= limbs.size()) {
     limbs.push_back(0);
   }
 }
@@ -73,9 +73,9 @@ void BigInt::split_double_limb(double_limb_type d, double_limb_type &large,
   large = (d >> LIMB_WIDTH) & LIMB_MASK;
 }
 
-BigInt::limbs_const_iter_t BigInt::first_non_zero(limbs_const_iter_t start,
-                                                  limbs_const_iter_t end) {
-  limbs_const_iter_t iter = end;
+BigInt::limbs_const_iter_type
+BigInt::first_non_zero(limbs_const_iter_type start, limbs_const_iter_type end) {
+  limbs_const_iter_type iter = end;
   --iter;
   while (iter >= start && *iter == 0) {
     --iter;
@@ -84,11 +84,12 @@ BigInt::limbs_const_iter_t BigInt::first_non_zero(limbs_const_iter_t start,
   return iter;
 }
 
-BigInt::Comparison BigInt::compare(limbs_const_iter_t lhs_start,
-                                   limbs_const_iter_t lhs_end, limb_type rhs) {
-  limbs_const_iter_t lhs_iter = first_non_zero(lhs_start, lhs_end);
+BigInt::Comparison BigInt::compare(limbs_const_iter_type lhs_start,
+                                   limbs_const_iter_type lhs_end,
+                                   limb_type rhs) {
+  limbs_const_iter_type lhs_iter = first_non_zero(lhs_start, lhs_end);
 
-  switch (compare<limbs_const_iter_t>(lhs_iter, lhs_start)) {
+  switch (compare<limbs_const_iter_type>(lhs_iter, lhs_start)) {
     case Comparison::LESS_THAN:
       return compare<limb_type>(0, rhs);
     case Comparison::EQUALS:
@@ -98,18 +99,18 @@ BigInt::Comparison BigInt::compare(limbs_const_iter_t lhs_start,
   }
 }
 
-BigInt::Comparison BigInt::compare(limbs_const_iter_t lhs_start,
-                                   limbs_const_iter_t lhs_end,
-                                   limbs_const_iter_t rhs_start,
-                                   limbs_const_iter_t rhs_end) {
-  limbs_const_iter_t lhs_iter = first_non_zero(lhs_start, lhs_end);
-  limbs_const_iter_t rhs_iter = first_non_zero(rhs_start, rhs_end);
+BigInt::Comparison BigInt::compare(limbs_const_iter_type lhs_start,
+                                   limbs_const_iter_type lhs_end,
+                                   limbs_const_iter_type rhs_start,
+                                   limbs_const_iter_type rhs_end) {
+  limbs_const_iter_type lhs_iter = first_non_zero(lhs_start, lhs_end);
+  limbs_const_iter_type rhs_iter = first_non_zero(rhs_start, rhs_end);
 
-  limbs_difference_t lhs_length = lhs_iter - lhs_start + 1;
-  limbs_difference_t rhs_length = rhs_iter - rhs_start + 1;
+  limbs_const_iter_type::difference_type lhs_length = lhs_iter - lhs_start + 1;
+  limbs_const_iter_type::difference_type rhs_length = rhs_iter - rhs_start + 1;
 
   Comparison length_comparison =
-      compare<limbs_difference_t>(lhs_length, rhs_length);
+      compare<limbs_index_difference_type>(lhs_length, rhs_length);
 
   if (length_comparison != Comparison::EQUALS) {
     return length_comparison;
@@ -159,9 +160,9 @@ bool operator>=(const BigInt &lhs, BigInt::limb_type rhs) {
 }
 
 void BigInt::add_limb(limbs_type &lhs_limbs, limbs_index_type lhs_index,
-                      double_limb_t rhs) {
+                      double_limb_type rhs) {
   if (rhs > 0) {
-    maybe_add_leading_zero(limbs, lhs_index);
+    maybe_add_leading_zero(lhs_limbs, lhs_index);
     double_limb_type carry = 0;
 
     split_double_limb(rhs + lhs_limbs[lhs_index], carry, lhs_limbs[lhs_index]);
@@ -176,22 +177,20 @@ void BigInt::add_big_int(limbs_type &lhs_limbs, limbs_index_type lhs_index,
                          limbs_const_iter_type rhs_iter,
                          limbs_const_iter_type rhs_end) {
   if (rhs_iter < rhs_end) {
-    add_limb(lhs_limbs, lhs_iter_copy, *rhs_iter);
+    add_limb(lhs_limbs, lhs_index, *rhs_iter);
 
     add_big_int(lhs_limbs, lhs_index + 1, rhs_iter + 1, rhs_end);
   }
 }
 
 BigInt &BigInt::operator+=(limb_type rhs) {
-  limbs_iter_t lhs_iter = limbs.begin();
-  add_limb(limbs, lhs_iter, rhs);
+  add_limb(limbs, 0, rhs);
 
   return *this;
 }
 
 BigInt &BigInt::operator+=(const BigInt &rhs) {
-  limbs_iter_t lhs_iter = limbs.begin();
-  add_big_int(limbs, lhs_iter, rhs.limbs.cbegin(), rhs.limbs.cend());
+  add_big_int(limbs, 0, rhs.limbs.cbegin(), rhs.limbs.cend());
 
   return *this;
 }
@@ -208,43 +207,39 @@ BigInt operator+(const BigInt &lhs, const BigInt &rhs) {
   return result;
 }
 
-void BigInt::subtract_limb(limbs_iter_t lhs_iter, limbs_iter_t lhs_end,
+void BigInt::subtract_limb(limbs_type &lhs_limbs, limbs_index_type lhs_index,
                            limb_type rhs) {
   if (rhs > 0) {
-    if (lhs_iter == lhs_end) {
+    if (lhs_index == lhs_limbs.size()) {
       throw underflow_error("Negative number occurred when subtracting");
-    } else if (rhs <= *lhs_iter) {
-      *lhs_iter -= rhs;
+    } else if (rhs <= lhs_limbs[lhs_index]) {
+      lhs_limbs[lhs_index] -= rhs;
     } else {
-      *lhs_iter += LIMB_MODULUS - rhs;
+      lhs_limbs[lhs_index] += LIMB_MODULUS - rhs;
 
-      ++lhs_iter;
-
-      subtract_limb(lhs_iter, lhs_end, 1);
+      subtract_limb(lhs_limbs, lhs_index + 1, 1);
     }
   }
 }
 
-void BigInt::subtract_big_int(limbs_iter_t lhs_iter, limbs_iter_t lhs_end,
-                              limbs_const_iter_t rhs_iter,
-                              limbs_const_iter_t rhs_end) {
-  while (rhs_iter != rhs_end) {
-    subtract_limb(lhs_iter, lhs_end, *rhs_iter);
+void BigInt::subtract_big_int(limbs_type &lhs_limbs, limbs_index_type lhs_index,
+                              limbs_const_iter_type rhs_iter,
+                              limbs_const_iter_type rhs_end) {
+  if (rhs_iter != rhs_end) {
+    subtract_limb(lhs_limbs, lhs_index, *rhs_iter);
 
-    ++lhs_iter;
-    ++rhs_iter;
+    subtract_big_int(lhs_limbs, lhs_index + 1, rhs_iter + 1, rhs_end);
   }
 }
 
 BigInt &BigInt::operator-=(limb_type rhs) {
-  subtract_limb(limbs.begin(), limbs.end(), rhs);
+  subtract_limb(limbs, 0, rhs);
 
   return *this;
 }
 
 BigInt &BigInt::operator-=(const BigInt &rhs) {
-  subtract_big_int(limbs.begin(), limbs.end(), rhs.limbs.cbegin(),
-                   rhs.limbs.cend());
+  subtract_big_int(limbs, 0, rhs.limbs.cbegin(), rhs.limbs.cend());
 
   return *this;
 }
@@ -261,82 +256,85 @@ BigInt operator-(const BigInt &lhs, const BigInt &rhs) {
   return result;
 }
 
-void BigInt::multiply_by_limb(limbs_t &acc_limbs, limbs_iter_t acc_iter,
-                              limbs_const_iter_t lhs_iter,
-                              limbs_const_iter_t lhs_end, limb_type rhs) {
-  while (lhs_iter != lhs_end) {
-    maybe_add_leading_zero(acc_limbs, acc_iter);
-    add_limb(acc_limbs, acc_iter,
+void BigInt::multiply_by_limb(limbs_type &acc_limbs, limbs_index_type acc_index,
+                              limbs_const_iter_type lhs_iter,
+                              limbs_const_iter_type lhs_end, limb_type rhs) {
+  if (lhs_iter != lhs_end) {
+    add_limb(acc_limbs, acc_index,
              static_cast<double_limb_type>(rhs) * *lhs_iter);
 
-    ++acc_iter;
-    ++lhs_iter;
+    multiply_by_limb(acc_limbs, acc_index + 1, lhs_iter + 1, lhs_end, rhs);
   }
 }
 
-void BigInt::multiply_by_big_int(limbs_t &acc_limbs, limbs_iter_t acc_iter,
-                                 limbs_const_iter_t lhs_iter,
-                                 limbs_const_iter_t lhs_end,
-                                 limbs_const_iter_t rhs_iter,
-                                 limbs_const_iter_t rhs_end) {
-  while (rhs_iter != rhs_end) {
-    maybe_add_leading_zero(acc_limbs, acc_iter);
-    multiply_by_limb(acc_limbs, acc_iter, lhs_iter, lhs_end, *rhs_iter);
+void BigInt::multiply_by_big_int(limbs_type &acc_limbs,
+                                 limbs_index_type acc_index,
+                                 limbs_const_iter_type lhs_iter,
+                                 limbs_const_iter_type lhs_end,
+                                 limbs_const_iter_type rhs_iter,
+                                 limbs_const_iter_type rhs_end) {
+  if (rhs_iter != rhs_end) {
+    multiply_by_limb(acc_limbs, acc_index, lhs_iter, lhs_end, *rhs_iter);
 
-    ++acc_iter;
-    ++rhs_iter;
+    multiply_by_big_int(acc_limbs, acc_index + 1, lhs_iter, lhs_end,
+                        rhs_iter + 1, rhs_end);
   }
 }
 
 BigInt BigInt::operator*(limb_type rhs) const {
   BigInt result;
-  multiply_by_limb(result.limbs, result.limbs.begin(), limbs.cbegin(),
-                   limbs.cend(), rhs);
+  multiply_by_limb(result.limbs, 0, limbs.cbegin(), limbs.cend(), rhs);
   return result;
 }
 
 BigInt BigInt::operator*(const BigInt &rhs) const {
   BigInt result;
 
-  multiply_by_big_int(result.limbs, result.limbs.begin(), limbs.cbegin(),
-                      limbs.cend(), rhs.limbs.cbegin(), rhs.limbs.cend());
+  multiply_by_big_int(result.limbs, 0, limbs.cbegin(), limbs.cend(),
+                      rhs.limbs.cbegin(), rhs.limbs.cend());
   return result;
 }
 
-BigInt::limb_type BigInt::short_division(limbs_iter_t lhs_start,
-                                         limbs_iter_t lhs_end,
-                                         limbs_const_iter_t rhs_start,
-                                         limbs_const_iter_t rhs_end) {
+BigInt::limb_type BigInt::short_division(limbs_type &lhs_limbs,
+                                         limbs_index_type lhs_index,
+                                         limbs_const_iter_type rhs_start,
+                                         limbs_const_iter_type rhs_end) {
   limb_type result = 0;
 
   if (rhs_start > first_non_zero(rhs_start, rhs_end)) {
     throw domain_error("Divide by zero!");
   }
 
-  while (compare(lhs_start, lhs_end, rhs_start, rhs_end) !=
-         Comparison::LESS_THAN) {
-    subtract_big_int(lhs_start, lhs_end, rhs_start, rhs_end);
+  while (compare(lhs_limbs.cbegin() + lhs_index, lhs_limbs.cend(), rhs_start,
+                 rhs_end) != Comparison::LESS_THAN) {
+    subtract_big_int(lhs_limbs, lhs_index, rhs_start, rhs_end);
     ++result;
   }
 
   return result;
 }
 
-BigInt BigInt::long_division(limbs_iter_t lhs_start, limbs_iter_t lhs_end,
-                             limbs_const_iter_t rhs_start,
-                             limbs_const_iter_t rhs_end) {
+BigInt BigInt::long_division(limbs_type &lhs_limbs, limbs_index_type lhs_index,
+                             limbs_const_iter_type rhs_start,
+                             limbs_const_iter_type rhs_end) {
   BigInt result;
 
-  for (auto lhs_iter = lhs_end; lhs_iter >= lhs_start; --lhs_iter) {
+  while (true) {
     result.limbs.push_front(
-        short_division(lhs_iter, lhs_end, rhs_start, rhs_end));
+        short_division(lhs_limbs, lhs_index, rhs_start, rhs_end));
+
+    if (lhs_index == 0) {
+      break;
+    } else {
+      --lhs_index;
+    }
   }
 
   return result;
 }
 
 void BigInt::div_mod(BigInt &lhs, const BigInt &rhs, BigInt &div) {
-  div = long_division(lhs.limbs.begin(), lhs.limbs.end(), rhs.limbs.cbegin(),
+  div = long_division(lhs.limbs, lhs.limbs.size() - 1, rhs.limbs.cbegin(),
                       rhs.limbs.cend());
 }
 
@@ -347,8 +345,7 @@ void BigInt::div_mod(const BigInt &lhs, const BigInt &rhs, BigInt &div,
 }
 
 BigInt &BigInt::operator%=(const BigInt &rhs) {
-  long_division(limbs.begin(), limbs.end(), rhs.limbs.cbegin(),
-                rhs.limbs.cend());
+  long_division(limbs, limbs.size() - 1, rhs.limbs.cbegin(), rhs.limbs.cend());
   return *this;
 }
 
@@ -410,6 +407,25 @@ BigInt BigInt::mod_inv(const BigInt &b, const BigInt &n) {
   }
 }
 
+BigInt::bit_index_type BigInt::log_2() const {
+  return limb_count() * LIMB_WIDTH;
+}
+
+int BigInt::operator[](const BigInt::bit_index_type index) const {
+  if (index < 0) {
+    throw range_error("Cannot access negative bit");
+  } else {
+    limbs_index_type limb_index = index / LIMB_WIDTH;
+    bit_index_type bit_index = index % LIMB_WIDTH;
+
+    if (limb_index >= limb_count()) {
+      return 0;
+    } else {
+      return (limbs[limb_index] >> bit_index) & 1;
+    }
+  }
+}
+
 BigInt &operator<<=(BigInt &lhs, const BigInt::Limbs &rhs) {
   for (unsigned int n = 0; n < rhs.quantity; ++n) {
     lhs.limbs.push_front(0);
@@ -451,6 +467,6 @@ ostream &operator<<(ostream &os, const BigInt &value) {
   return os;
 }
 
-size_t BigInt::size() const { return limbs.size(); }
+BigInt::limbs_size_type BigInt::limb_count() const { return limbs.size(); }
 
 void BigInt::trim() { remove_leading_zeros(limbs); }

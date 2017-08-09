@@ -4,7 +4,6 @@
 #include <bitset> // Only for debug
 
 #include "bigint.hpp"
-#include "bititerator.hpp"
 
 using std::out_of_range;
 
@@ -24,7 +23,8 @@ private:
 
   void reduce();
 
-  static bool sliding_window_k_check(ptrdiff_t log_n, ptrdiff_t k);
+  static bool sliding_window_k_check(BigInt::bit_index_type log_n,
+                                     BigInt::bit_index_type k);
 
   static ptrdiff_t power_to_array_index(ptrdiff_t p, ptrdiff_t count);
 
