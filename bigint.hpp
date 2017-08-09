@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -12,6 +13,7 @@
 
 using std::ios;
 using std::domain_error;
+using std::getline;
 using std::invalid_argument;
 using std::istream;
 using std::ostream;

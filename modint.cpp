@@ -29,7 +29,10 @@ void ModInt::reduce(BigInt &value, const ModIntFactory &factory) {
     value >>= BigInt::Limbs(1);
   }
 
-  value.trim();
+  if (value > factory.mod) {
+    // std::cout << std::endl << "REDUCTION!!!" << std::endl << std::endl;
+    value %= factory.mod;
+  }
 }
 
 void ModInt::reduce() { reduce(value, *factory); }
@@ -57,7 +60,10 @@ bool ModInt::sliding_window_k_check(BigInt::bit_index_type log_n,
 }
 
 ptrdiff_t ModInt::power_to_array_index(ptrdiff_t p, ptrdiff_t count) {
+  // std::cout << "Power: " << p << std::endl;
   ptrdiff_t i = (p - 1) / 2;
+  // std::cout << "Index: " << i << std::endl;
+  // std::cout << "Count: " << count << std::endl;
   if ((i >= 0) && (i < count)) {
     return i;
   } else {
@@ -78,9 +84,12 @@ ModInt ModInt::pow(const ModInt &x, const BigInt &n) {
     ++k;
   }
 
-  std::cout << "k:" << k << std::endl;
+  // std::cout << "k:" << k << std::endl;
 
   ptrdiff_t precalculated_items_count = 1 << k;
+
+  // std::cout << "Precaclulated items count: " << precalculated_items_count
+  //    << std::endl;
 
   ModInt precalculated_items[precalculated_items_count];
 
@@ -99,10 +108,10 @@ ModInt ModInt::pow(const ModInt &x, const BigInt &n) {
 
   // 2.  while i > -1 do
   while (i > -1) {
-    std::cout << "i: " << i << std::endl;
+    // std::cout << "i: " << i << std::endl;
     // 3.      if ni=0 then y:=y2' i:=i-1
     if (n[i] == 0) {
-      std::cout << "Zero" << std::endl;
+      // std::cout << "Zero" << std::endl;
       y = y * y;
       --i;
     }
@@ -122,15 +131,16 @@ ModInt ModInt::pow(const ModInt &x, const BigInt &n) {
       }
       // 8.          u:=(ni,ni-1,....,ns)2
       size_t u = 0;
-      for (BigInt::bit_index_type h = s; h <= i; ++h) {
+      for (BigInt::bit_index_type h = i; h >= s; --h) {
         u = (u << 1) + n[h];
       }
-      std::cout << "u" << std::endl;
+      // std::cout << "u: " << u << std::endl;
       // 9.          y:=y*xu
-      y = y * precalculated_items[power_to_array_index(
-                  u, precalculated_items_count)];
+      y = precalculated_items[power_to_array_index(u,
+                                                   precalculated_items_count)] *
+          y;
       // 10.         i:=s-1
-      --i;
+      i = s - 1;
     }
   }
   // 11. return y

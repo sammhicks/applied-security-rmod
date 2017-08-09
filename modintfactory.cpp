@@ -6,11 +6,7 @@ ModIntFactory::ModIntFactory(const BigInt &modulus) : mod(modulus) {
   BigInt range(1);
   range <<= BigInt::Limbs(mod.limb_count());
 
-  std::cout << "Range: " << range << std::endl;
-
   conversion_factor = range * range;
-
-  std::cout << "Conversion Factor pre mod: " << conversion_factor << std::endl;
 
   conversion_factor %= mod;
 }

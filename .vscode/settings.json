@@ -47,6 +47,10 @@
         "list": "cpp",
         "vector": "cpp",
         "iterator": "cpp",
-        "bitset": "cpp"
+        "bitset": "cpp",
+        "xlocmon": "cpp",
+        "ctime": "cpp",
+        "iomanip": "cpp",
+        "xloctime": "cpp"
     }
 }

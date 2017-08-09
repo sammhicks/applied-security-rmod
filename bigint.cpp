@@ -10,20 +10,22 @@ BigInt::BigInt(uint64_t n) {
 }
 
 BigInt::BigInt(const string &str) {
-  size_t n = str.length() - HEX_CHARS_PER_LIMB;
+  if (!str.empty()) {
+    size_t n = str.length() - HEX_CHARS_PER_LIMB;
 
-  while (true) {
-    append_limb(str.substr(n, HEX_CHARS_PER_LIMB));
+    while (true) {
+      append_limb(str.substr(n, HEX_CHARS_PER_LIMB));
 
-    if (n <= HEX_CHARS_PER_LIMB) {
-      break;
-    } else {
-      n -= HEX_CHARS_PER_LIMB;
+      if (n <= HEX_CHARS_PER_LIMB) {
+        break;
+      } else {
+        n -= HEX_CHARS_PER_LIMB;
+      }
     }
-  }
 
-  if (n > 0) {
-    append_limb(str.substr(0, n));
+    if (n > 0) {
+      append_limb(str.substr(0, n));
+    }
   }
 }
 
@@ -176,10 +178,11 @@ void BigInt::add_limb(limbs_type &lhs_limbs, limbs_index_type lhs_index,
 void BigInt::add_big_int(limbs_type &lhs_limbs, limbs_index_type lhs_index,
                          limbs_const_iter_type rhs_iter,
                          limbs_const_iter_type rhs_end) {
-  if (rhs_iter < rhs_end) {
+  while (rhs_iter < rhs_end) {
     add_limb(lhs_limbs, lhs_index, *rhs_iter);
 
-    add_big_int(lhs_limbs, lhs_index + 1, rhs_iter + 1, rhs_end);
+    ++lhs_index;
+    ++rhs_iter;
   }
 }
 
@@ -225,10 +228,11 @@ void BigInt::subtract_limb(limbs_type &lhs_limbs, limbs_index_type lhs_index,
 void BigInt::subtract_big_int(limbs_type &lhs_limbs, limbs_index_type lhs_index,
                               limbs_const_iter_type rhs_iter,
                               limbs_const_iter_type rhs_end) {
-  if (rhs_iter != rhs_end) {
+  while (rhs_iter != rhs_end) {
     subtract_limb(lhs_limbs, lhs_index, *rhs_iter);
 
-    subtract_big_int(lhs_limbs, lhs_index + 1, rhs_iter + 1, rhs_end);
+    ++lhs_index;
+    ++rhs_iter;
   }
 }
 
@@ -273,11 +277,11 @@ void BigInt::multiply_by_big_int(limbs_type &acc_limbs,
                                  limbs_const_iter_type lhs_end,
                                  limbs_const_iter_type rhs_iter,
                                  limbs_const_iter_type rhs_end) {
-  if (rhs_iter != rhs_end) {
+  while (rhs_iter != rhs_end) {
     multiply_by_limb(acc_limbs, acc_index, lhs_iter, lhs_end, *rhs_iter);
 
-    multiply_by_big_int(acc_limbs, acc_index + 1, lhs_iter, lhs_end,
-                        rhs_iter + 1, rhs_end);
+    ++acc_index;
+    ++rhs_iter;
   }
 }
 
@@ -453,16 +457,25 @@ istream &operator>>(istream &is, BigInt &value) {
 }
 
 ostream &operator<<(ostream &os, const BigInt &value) {
-  ios::fmtflags f(os.flags());
 
-  os << std::hex;
+  if (!value.limbs.empty()) {
+    ios::fmtflags f(os.flags());
 
-  os << "BigInt:";
-  for (auto iter = value.limbs.crbegin(); iter != value.limbs.crend(); ++iter) {
-    os << *iter;
+    os << std::hex;
+    os << std::uppercase;
+
+    os << value.limbs.back();
+
+    for (auto iter = value.limbs.crbegin() + 1; iter != value.limbs.crend();
+         ++iter) {
+      os << std::setfill('0');
+      << std::setw(BigInt::HEX_CHARS_PER_LIMB) << *iter;
+    }
+
+    os.flags(f);
+  } else {
+    os << "0";
   }
-
-  os.flags(f);
 
   return os;
 }
