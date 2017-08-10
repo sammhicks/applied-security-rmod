@@ -30,7 +30,6 @@ void ModInt::reduce(BigInt &value, const ModIntFactory &factory) {
   }
 
   if (value > factory.mod) {
-    // std::cout << std::endl << "REDUCTION!!!" << std::endl << std::endl;
     value %= factory.mod;
   }
 }

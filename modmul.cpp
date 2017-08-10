@@ -89,7 +89,22 @@ Perform stage 4:
 - write the plaintext m to stdout.
 */
 
-void stage4() {}
+void stage4() {
+  BigInt p, q, g, x, c1, c2;
+
+  cin >> p >> q >> g >> x >> c1 >> c2;
+
+  if (!cin.eof()) {
+    ModIntFactory p_f(p);
+
+    // m = c2*(c1 ^ (q-x)) mod p
+    ModInt m_mod_p = (c2 % p_f) * (c1 % p_f).pow(q - x);
+
+    BigInt m = static_cast<BigInt>(m_mod_p);
+
+    cout << m << endl;
+  }
+}
 
 int main(int argc, char *argv[]) {
   if (2 != argc) {

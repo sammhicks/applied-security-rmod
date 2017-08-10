@@ -375,6 +375,7 @@ BigInt &BigInt::operator%=(const BigInt &rhs) {
   return *this;
 }
 
+// https://en.wikibooks.org/wiki/Algorithm_Implementation/Mathematics/Extended_Euclidean_algorithm#Recursive_algorithm_2
 void BigInt::egcd(long a, long b, long &g, long &x, long &y) {
   if (a == 0) {
     g = b;
@@ -389,6 +390,7 @@ void BigInt::egcd(long a, long b, long &g, long &x, long &y) {
   }
 }
 
+// https://en.wikibooks.org/wiki/Algorithm_Implementation/Mathematics/Extended_Euclidean_algorithm#Recursive_algorithm_2
 void BigInt::egcd(const BigInt &a, const BigInt &b, const BigInt &b_orig,
                   BigInt &g, BigInt &x, BigInt &y) {
   if (a == 0) {
