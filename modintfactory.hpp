@@ -18,3 +18,5 @@ public:
 
   friend class ModInt;
 };
+
+ModInt operator%(const BigInt &value, const ModIntFactory &factory);

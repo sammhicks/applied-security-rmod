@@ -137,8 +137,11 @@ public:
   limb_type least_significant_limb() const;
 
   friend bool operator==(const BigInt &lhs, limb_type rhs);
+  friend bool operator==(const BigInt &lhs, const BigInt &rhs);
 
+  friend bool operator<(const BigInt &lhs, limb_type rhs);
   friend bool operator<(const BigInt &lhs, const BigInt &rhs);
+  friend bool operator>(const BigInt &lhs, limb_type rhs);
   friend bool operator>(const BigInt &lhs, const BigInt &rhs);
 
   BigInt &operator+=(limb_type rhs);
@@ -181,6 +184,9 @@ BigInt operator+(const BigInt &lhs, const BigInt &rhs);
 BigInt operator-(const BigInt &lhs, BigInt::limb_type rhs);
 BigInt operator-(const BigInt &lhs, const BigInt &rhs);
 
+bool operator!=(const BigInt &lhs, BigInt::limb_type rhs);
 bool operator!=(const BigInt &lhs, const BigInt &rhs);
+bool operator<=(const BigInt &lhs, BigInt::limb_type rhs);
 bool operator<=(const BigInt &lhs, const BigInt &rhs);
+bool operator>=(const BigInt &lhs, BigInt::limb_type rhs);
 bool operator>=(const BigInt &lhs, const BigInt &rhs);

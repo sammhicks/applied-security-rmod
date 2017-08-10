@@ -19,11 +19,15 @@ void stage1() {
   cin >> N >> e >> m;
 
   if (!cin.eof()) {
-    ModIntFactory f(N);
+    ModIntFactory N_f(N);
 
-    ModInt m_mod = f.create_int(m);
+    ModInt m_mod_N = m % N_f;
 
-    cout << static_cast<BigInt>(m_mod.pow(e)) << endl;
+    ModInt c_mod_N = m_mod_N.pow(e);
+
+    BigInt c = static_cast<BigInt>(c_mod_N);
+
+    cout << c << endl;
   }
 }
 
@@ -34,7 +38,38 @@ Perform stage 2:
 - compute the RSA decryption m, then
 - write the plaintext m to stdout.
 */
-void stage2() {}
+void stage2() {
+  BigInt N, d, p, q, d_p, d_q, i_p, i_q, c;
+  cin >> N >> d >> p >> q >> d_p >> d_q >> i_p >> i_q >> c;
+
+  if (!cin.eof()) {
+    ModIntFactory p_f(p), q_f(q), N_f(N);
+
+    // m = c^d mod N, but using CRT
+
+    // m1 = c^d_p mod p
+    ModInt m1_mod_p = (c % p_f).pow(d_p);
+    // m2 = c^d_q mod q
+    ModInt m2_mod_q = (c % q_f).pow(d_q);
+
+    // m_diff = (m1 - m2) mod p
+    // This accounts for the case when m2 > m1, and seeing as we later on mod by
+    // p anyway, we don't lose anything
+    ModInt m_diff_mod_p = m1_mod_p;
+    m_diff_mod_p -= m2_mod_q % p_f;
+
+    // h = i_q(m1 - m2) mod p
+    ModInt h_mod_p = (i_q % p_f) * m_diff_mod_p;
+
+    // m = (m2 + h * q) mod N
+    ModInt m_mod_N = m2_mod_q % N_f;
+    m_mod_N += (h_mod_p % N_f) * (q % N_f);
+
+    BigInt m = static_cast<BigInt>(m_mod_N);
+
+    cout << m << endl;
+  }
+}
 
 /*
 Perform stage 3:

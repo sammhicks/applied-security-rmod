@@ -43,6 +43,48 @@ ModInt::operator BigInt() const {
   return result;
 }
 
+ModInt &ModInt::operator+=(const ModInt &rhs) {
+  if (factory != rhs.factory) {
+    throw runtime_error("Addition of ModInts must have the same factory");
+  } else {
+    value += rhs.value;
+
+    if (value >= factory->mod) {
+      value -= factory->mod;
+    }
+
+    if (value >= factory->mod) {
+      throw runtime_error("Mod Error on ModInt Addition");
+    }
+  }
+
+  return *this;
+}
+
+ModInt operator+(const ModInt &lhs, const ModInt &rhs) {
+  ModInt result = lhs;
+  result += rhs;
+  return result;
+}
+
+ModInt &ModInt::operator-=(const ModInt &rhs) {
+  if (factory != rhs.factory) {
+    throw runtime_error("Addition of ModInts must have the same factory");
+  } else {
+    if (value < rhs.value) {
+      value += factory->mod;
+    }
+    value -= rhs.value;
+  }
+  return *this;
+}
+
+ModInt operator-(const ModInt &lhs, const ModInt &rhs) {
+  ModInt result = lhs;
+  result -= rhs;
+  return result;
+}
+
 ModInt operator*(const ModInt &a, const ModInt &b) {
   if (a.factory == b.factory) {
     return ModInt(a.value * b.value, a.factory);
@@ -145,4 +187,8 @@ ModInt ModInt::pow(const ModInt &x, const BigInt &n) {
   }
   // 11. return y
   return y;
+}
+
+ModInt operator%(const ModInt &mod_value, const ModIntFactory &factory) {
+  return factory.create_int(static_cast<BigInt>(mod_value));
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 
 #include "bigint.hpp"
@@ -15,5 +16,6 @@ void repeat_stage(void (*stage)());
 void stage1();
 void stage2();
 void stage3();
+void stage4();
 
 int main(int argc, char *argv[]);

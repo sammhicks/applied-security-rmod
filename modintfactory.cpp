@@ -14,3 +14,7 @@ ModIntFactory::ModIntFactory(const BigInt &modulus) : mod(modulus) {
 ModInt ModIntFactory::create_int(const BigInt &value) const {
   return ModInt(value * conversion_factor, this);
 }
+
+ModInt operator%(const BigInt &value, const ModIntFactory &factory) {
+  return factory.create_int(value);
+}

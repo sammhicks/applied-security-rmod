@@ -137,8 +137,21 @@ bool operator==(const BigInt &lhs, BigInt::limb_type rhs) {
          BigInt::Comparison::EQUALS;
 }
 
+bool operator==(const BigInt &lhs, const BigInt &rhs) {
+  return BigInt::compare(lhs.limbs.cbegin(), lhs.limbs.cend(),
+                         rhs.limbs.cbegin(),
+                         rhs.limbs.cend()) == BigInt::Comparison::EQUALS;
+}
+
 bool operator!=(const BigInt &lhs, BigInt::limb_type rhs) {
   return !(lhs == rhs);
+}
+
+bool operator!=(const BigInt &lhs, const BigInt &rhs) { return !(lhs == rhs); }
+
+bool operator<(const BigInt &lhs, BigInt::limb_type rhs) {
+  return BigInt::compare(lhs.limbs.cbegin(), lhs.limbs.cend(), rhs) ==
+         BigInt::Comparison::LESS_THAN;
 }
 
 bool operator<(const BigInt &lhs, const BigInt &rhs) {
@@ -151,6 +164,13 @@ bool operator<=(const BigInt &lhs, BigInt::limb_type rhs) {
   return !(lhs > rhs);
 }
 
+bool operator<=(const BigInt &lhs, const BigInt &rhs) { return !(lhs > rhs); }
+
+bool operator>(const BigInt &lhs, BigInt::limb_type rhs) {
+  return BigInt::compare(lhs.limbs.cbegin(), lhs.limbs.cend(), rhs) ==
+         BigInt::Comparison::GREATER_THAN;
+}
+
 bool operator>(const BigInt &lhs, const BigInt &rhs) {
   return BigInt::compare(lhs.limbs.cbegin(), lhs.limbs.cend(),
                          rhs.limbs.cbegin(),
@@ -160,6 +180,8 @@ bool operator>(const BigInt &lhs, const BigInt &rhs) {
 bool operator>=(const BigInt &lhs, BigInt::limb_type rhs) {
   return !(lhs < rhs);
 }
+
+bool operator>=(const BigInt &lhs, const BigInt &rhs) { return !(lhs < rhs); }
 
 void BigInt::add_limb(limbs_type &lhs_limbs, limbs_index_type lhs_index,
                       double_limb_type rhs) {
@@ -468,8 +490,7 @@ ostream &operator<<(ostream &os, const BigInt &value) {
 
     for (auto iter = value.limbs.crbegin() + 1; iter != value.limbs.crend();
          ++iter) {
-      os << std::setfill('0');
-      << std::setw(BigInt::HEX_CHARS_PER_LIMB) << *iter;
+      os << std::setfill('0') << std::setw(BigInt::HEX_CHARS_PER_LIMB) << *iter;
     }
 
     os.flags(f);
