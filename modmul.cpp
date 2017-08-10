@@ -87,7 +87,11 @@ void stage3() {
   if (!cin.eof()) {
     ModIntFactory p_f(p);
 
+#ifdef FIX_KEY
     BigInt k(1);
+#else
+    BigInt k = random_bigint(BigInt(1), q);
+#endif
 
     // c1 = g^k mod p
     ModInt c1_mod_p = (g % p_f).pow(k);
@@ -134,6 +138,8 @@ int main(int argc, char *argv[]) {
   if (2 != argc) {
     abort();
   }
+
+  seed_generator();
 
   if (!strcmp(argv[1], "stage1")) {
     repeat_stage(stage1);

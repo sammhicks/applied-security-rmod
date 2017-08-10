@@ -29,7 +29,15 @@ BigInt::BigInt(const string &str) {
   }
 }
 
-BigInt::limb_type BigInt::least_significant_limb() const {
+BigInt::limbs_const_iter_type BigInt::most_significant_limb() const {
+  return first_non_zero(limbs.cbegin(), limbs.cend());
+}
+
+BigInt::limbs_const_iter_type BigInt::least_significant_limb() const {
+  return limbs.cbegin();
+}
+
+BigInt::limb_type BigInt::least_significant_limb_value() const {
   return limbs.empty() ? 0 : limbs.front();
 }
 

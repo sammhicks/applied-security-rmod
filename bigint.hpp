@@ -57,10 +57,6 @@ private:
   // Remove leading zeros
   static void remove_leading_zeros(limbs_type &limbs);
 
-  // Add a limb as the most significant limb
-  void append_limb(string limb_str);
-  void append_limb(unsigned long int limb);
-
   // Split a double limb into two limbs
   static void split_double_limb(double_limb_type d, double_limb_type &large,
                                 limb_type &small);
@@ -134,7 +130,13 @@ public:
   BigInt(uint64_t n);
   BigInt(const string &str);
 
-  limb_type least_significant_limb() const;
+  // Add a limb as the most significant limb
+  void append_limb(string limb_str);
+  void append_limb(unsigned long int limb);
+
+  limbs_const_iter_type most_significant_limb() const;
+  limbs_const_iter_type least_significant_limb() const;
+  limb_type least_significant_limb_value() const;
 
   friend bool operator==(const BigInt &lhs, limb_type rhs);
   friend bool operator==(const BigInt &lhs, const BigInt &rhs);

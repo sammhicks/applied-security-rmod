@@ -36,3 +36,5 @@ modmul
 
 # Generated test output
 *.test
+
+gede2\.ini

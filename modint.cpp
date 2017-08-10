@@ -12,7 +12,7 @@ ModInt ModInt::create_from_same_factory(const BigInt &value) const {
 void ModInt::reduce(BigInt &value, const ModIntFactory &factory) {
   value.trim();
 
-  BigInt::limb_type mod0 = factory.mod.least_significant_limb();
+  BigInt::limb_type mod0 = factory.mod.least_significant_limb_value();
 
   BigInt::limb_type inv_mod0 = BigInt::mod_inv(mod0, BigInt::LIMB_MODULUS);
 
@@ -21,7 +21,7 @@ void ModInt::reduce(BigInt &value, const ModIntFactory &factory) {
   BigInt::limbs_size_type limb_count = factory.mod.limb_count();
 
   for (BigInt::limbs_size_type n = 0; n < limb_count; ++n) {
-    BigInt::limb_type k = (value.least_significant_limb() * neg_inv_mod0);
+    BigInt::limb_type k = (value.least_significant_limb_value() * neg_inv_mod0);
 
     k &= BigInt::LIMB_MASK;
 

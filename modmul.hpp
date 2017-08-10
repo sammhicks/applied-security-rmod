@@ -6,6 +6,7 @@
 
 #include "bigint.hpp"
 #include "modint.hpp"
+#include "randint.hpp"
 
 using std::cin;
 using std::cout;
