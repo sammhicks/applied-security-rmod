@@ -29,7 +29,7 @@ private:
   static ptrdiff_t power_to_array_index(ptrdiff_t p, ptrdiff_t count);
 
 public:
-  explicit operator BigInt() const;
+  operator BigInt() const;
 
   ModInt create_from_same_factory(const BigInt &value) const;
 

@@ -58,7 +58,7 @@ void BigInt::append_limb(string limb_str) {
     throw invalid_argument("limb string cannot be empty");
   }
 
-  char *limb_end = nullptr;
+  char *limb_end = NULL;
 
   unsigned long int limb = strtoul(limb_str.data(), &limb_end, HEX_MODULUS);
 

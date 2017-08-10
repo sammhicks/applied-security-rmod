@@ -40,3 +40,6 @@ modmul
 gede2\.ini
 
 \.gdbinit
+
+*.cpp~
+*.hpp~

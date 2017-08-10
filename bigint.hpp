@@ -41,12 +41,12 @@ public:
   typedef limbs_type::size_type limbs_size_type;
   typedef limbs_type::difference_type bit_index_type;
 
-  static constexpr bit_count_type HEX_BITS = 4;
-  static constexpr size_t HEX_MODULUS = 1 << BigInt::HEX_BITS;
-  static constexpr bit_count_type LIMB_WIDTH = 16;
-  static constexpr double_limb_type LIMB_MODULUS = 1 << BigInt::LIMB_WIDTH;
-  static constexpr double_limb_type LIMB_MASK = BigInt::LIMB_MODULUS - 1;
-  static constexpr bit_count_type HEX_CHARS_PER_LIMB = LIMB_WIDTH / HEX_BITS;
+  static const bit_count_type HEX_BITS = 4;
+  static const size_t HEX_MODULUS = 1 << BigInt::HEX_BITS;
+  static const bit_count_type LIMB_WIDTH = 16;
+  static const double_limb_type LIMB_MODULUS = 1 << BigInt::LIMB_WIDTH;
+  static const double_limb_type LIMB_MASK = BigInt::LIMB_MODULUS - 1;
+  static const bit_count_type HEX_CHARS_PER_LIMB = LIMB_WIDTH / HEX_BITS;
 
 private:
   limbs_type limbs;
