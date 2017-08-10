@@ -33,3 +33,6 @@
 
 # My Executable
 modmul
+
+# Generated test output
+*.test
