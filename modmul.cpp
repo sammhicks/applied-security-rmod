@@ -79,7 +79,31 @@ Perform stage 3:
 - write the ciphertext c to stdout.
 */
 
-void stage3() {}
+void stage3() {
+  BigInt p, q, g, h, m;
+
+  cin >> p >> q >> g >> h >> m;
+
+  if (!cin.eof()) {
+    ModIntFactory p_f(p);
+
+    BigInt k(1);
+
+    // c1 = g^k mod p
+    ModInt c1_mod_p = (g % p_f).pow(k);
+
+    // s = h^k mod p
+    ModInt s_mod_p = (h % p_f).pow(k);
+
+    // c2 = (m * s) % p;
+    ModInt c2_mod_p = (m % p_f) * s_mod_p;
+
+    BigInt c1 = static_cast<BigInt>(c1_mod_p);
+    BigInt c2 = static_cast<BigInt>(c2_mod_p);
+
+    cout << c1 << endl << c2 << endl;
+  }
+}
 
 /*
 Perform stage 4:
