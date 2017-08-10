@@ -38,3 +38,5 @@ modmul
 *.test
 
 gede2\.ini
+
+\.gdbinit
